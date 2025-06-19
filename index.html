@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>time-logger</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+</head>
+
+<body>
+
+Log time worked
+<form>
+    <select name="event" id="event">
+        <option value="in">In</option>
+        <option value="out">Out</option>
+        <option value="out">OT In</option>
+        <option value="out">OT Out</option>
+    </select>
+    <input type="text" id="time" name="time">
+
+    <input type="submit" value="Add">
+</form>
+
+<ul>
+    <li>2025-06-18 In 07:30 ❌ ✏️</li>
+    <li>2025-06-18 Out 11:30 ❌ ✏️</li>
+</ul>
+<input type="submit" value="End the day">
+<p>Worked: 4h</p>
+<p>Day saldo: -4h</p>
+
+<ul>
+    <li>2025-06-17 In 07:30 ❌ ✏️</li>
+    <li>2025-06-17 Out 11:30 ❌ ✏️</li>
+    <li>2025-06-17 In 12:30 ❌ ✏️</li>
+    <li>2025-06-17 Out 16:30 ❌ ✏️</li>
+</ul>
+<p>Worked: 8h</p>
+<p>Day saldo: 0</p>
+
+</body>
+</html>

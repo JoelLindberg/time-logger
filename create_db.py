@@ -11,9 +11,9 @@ console = Console(tab_size=4)
 load_dotenv()  # take environment variables
 
 DB_FILE = "time_logger.db"
-TABLE_EVENTS = "events"
-TABLE_DAILY = "daily"
-TABLE_MONTHLY = "monthly"
+#TABLE_EVENTS = "events"
+#TABLE_DAILY = "daily"
+#TABLE_MONTHLY = "monthly"
 TABLE_EVENTS_EXISTS = False
 TABLE_DAILY_EXISTS = False
 TABLE_MONTHLY_EXISTS = False
@@ -41,7 +41,7 @@ for i in r:
         #print(f"Table exists: {i[0]}")
 
 if TABLE_EVENTS_EXISTS == False:
-    tables = f"""CREATE TABLE {TABLE_EVENTS} (
+    tables = f"""CREATE TABLE {os.environ.get('TABLE_EVENTS')} (
         log_id INTEGER PRIMARY KEY,
         logged_date date,
         event_type varchar(3),
@@ -51,7 +51,7 @@ if TABLE_EVENTS_EXISTS == False:
     # in/out <- 3
     #15:50 <- 5
     cur.execute(tables)
-    text = Text(f"Created table {TABLE_EVENTS}")
+    text = Text(f"Created table {os.environ.get('TABLE_EVENTS')}")
     text.stylize("green")
     console.print(text)
 
@@ -67,7 +67,7 @@ for i in r:
         #print(f"Table exists: {i[0]}")
 
 if TABLE_DAILY_EXISTS == False:
-    tables = f"""CREATE TABLE {TABLE_DAILY} (
+    tables = f"""CREATE TABLE {os.environ.get('TABLE_DAILY')} (
         daily_id INTEGER PRIMARY KEY,
         date date,
         hours int,
@@ -76,7 +76,7 @@ if TABLE_DAILY_EXISTS == False:
         status varchar(6)
         );"""
     cur.execute(tables)
-    text = Text(f"Created table {TABLE_DAILY}")
+    text = Text(f"Created table {os.environ.get('TABLE_DAILY')}")
     text.stylize("green")
     console.print(text)
 
@@ -92,14 +92,14 @@ for i in r:
         #print(f"Table exists: {i[0]}")
 
 if TABLE_MONTHLY_EXISTS == False:
-    tables = f"""CREATE TABLE {TABLE_MONTHLY} (
+    tables = f"""CREATE TABLE {os.environ.get('TABLE_MONTHLY')} (
         monthly_id INTEGER PRIMARY KEY,
         month varchar(3),
         hours int,
         minutes int,
-        net varchar(3),
+        net varchar(3)
         );"""
     cur.execute(tables)
-    text = Text(f"Created table {TABLE_MONTHLY}")
+    text = Text(f"Created table {os.environ.get('TABLE_MONTHLY')}")
     text.stylize("green")
     console.print(text)

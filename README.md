@@ -9,11 +9,15 @@ Goals:
 
 
 
+## Development
+
 Using python-dotenv for setting env variables while developing: https://pypi.org/project/python-dotenv/
 
-Create `.env` and populate it with:
-~~~shell
-TABLE_EVENTS="events"
-TABLE_DAILY="daily"
-TABLE_MONTHLY="monthly"
-~~~
+1. Create `.env` and populate it with:
+    ~~~shell
+    TABLE_EVENTS="events"
+    TABLE_DAILY="daily"
+    TABLE_MONTHLY="monthly"
+    ~~~
+2. Run fastapi app: `fastapi dev time_logger.py`
+

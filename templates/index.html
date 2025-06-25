@@ -13,17 +13,38 @@
 
 <p>{{ message }}</p>
 
-<form>
+<form action="/add/" method="POST">
     <select name="event" id="event">
         <option value="in">In</option>
         <option value="out">Out</option>
         <option value="out">OT In</option>
         <option value="out">OT Out</option>
     </select>
+    <label for="time">Time</label>
     <input type="text" id="time" name="time">
-
+    <label for="comment">Comment</label>
+    <input type="text" id="comment" name="comment">
     <input type="submit" value="Add">
 </form>
+
+
+
+<ul id="logged_time">
+    {% for item in logged_time %}
+        <li>
+            {{ item.date }}
+            {{ item.event }}
+            {{ item.time }}
+            {{ item.comment }}
+            <a href="delete=?{{ item.id }}" id="delete">❌</a>
+            <a href="update=?{{ item.id }}" id="update">✏️</a>
+        </li>
+    {% endfor %}
+</ul>
+
+
+Static examples below:
+
 
 <ul>
     <li>2025-06-18 In 07:30 ❌ ✏️</li>

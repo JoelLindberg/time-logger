@@ -10,10 +10,6 @@ from dotenv import load_dotenv
 console = Console(tab_size=4)
 load_dotenv()  # take environment variables
 
-DB_FILE = "time_logger.db"
-#TABLE_EVENTS = "events"
-#TABLE_DAILY = "daily"
-#TABLE_MONTHLY = "monthly"
 TABLE_EVENTS_EXISTS = False
 TABLE_DAILY_EXISTS = False
 TABLE_MONTHLY_EXISTS = False
@@ -21,13 +17,13 @@ TABLE_MONTHLY_EXISTS = False
 
 # Check if database exists - otherwise create it
 # Need to create this for sqlite to check for the database file instead
-if os.path.exists(f"./{DB_FILE}"):
-    if os.path.isfile(f"./{DB_FILE}") is not True:
+if os.path.exists(f"./{os.environ.get('DB_FILE')}"):
+    if os.path.isfile(f"./{os.environ.get('DB_FILE')}") is not True:
         print("Could not create the database: There is a directory named the same as the database that is being created")
 else:
-    print(f"Creating database: ./{DB_FILE}")
+    print(f"Creating database: ./{os.environ.get('DB_FILE')}")
 
-con = sqlite3.connect(f"{DB_FILE}")
+con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 
 
 # log_time exists? - otherwise create it

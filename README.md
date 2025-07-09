@@ -18,6 +18,7 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
 
 1. Create `.env` and populate it with:
     ~~~shell
+    DB_FILE="time_logger.db"
     TABLE_EVENTS="events"
     TABLE_DAILY="daily"
     TABLE_MONTHLY="monthly"
@@ -32,6 +33,11 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
 
 
 ## Study notes and lessons learned
+
+### Lesson learned
+
+This little exercise taught me that the data management quickly escalated in an unorganized way. It quickly became hard to keep the data structured in terms of *'view'* and database. It was not my intention to focus on this part but at the same time I understand this is probably a challenge every time building an app and that an ORM or at the very least some implementation of structured data models could be beneficial. While it would be interesting to make some implementation of my own the next time I would instead like to see what tools exist to mitigate this somewhat.
+
 
 ### forms
 

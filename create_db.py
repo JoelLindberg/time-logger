@@ -42,7 +42,8 @@ if TABLE_EVENTS_EXISTS == False:
         logged_date date,
         event_type varchar(3),
         log_time varchar(5),
-        comment varchar(30)
+        comment varchar(30),
+        UNIQUE(logged_date, log_time)
         );"""
     # in/out <- 3
     #15:50 <- 5
@@ -65,11 +66,9 @@ for i in r:
 if TABLE_DAILY_EXISTS == False:
     tables = f"""CREATE TABLE {os.environ.get('TABLE_DAILY')} (
         daily_id INTEGER PRIMARY KEY,
-        date date,
-        hours int,
+        date date UNIQUE,
         minutes int,
-        net varchar(3),
-        status varchar(6)
+        ot_minutes int
         );"""
     cur.execute(tables)
     text = Text(f"Created table {os.environ.get('TABLE_DAILY')}")
@@ -90,10 +89,12 @@ for i in r:
 if TABLE_MONTHLY_EXISTS == False:
     tables = f"""CREATE TABLE {os.environ.get('TABLE_MONTHLY')} (
         monthly_id INTEGER PRIMARY KEY,
-        month varchar(3),
-        hours int,
+        year varchar(4),
+        month varchar(2),
         minutes int,
-        net varchar(3)
+        ot_minutes int,
+        worked_days int,
+        UNIQUE(year, month)
         );"""
     cur.execute(tables)
     text = Text(f"Created table {os.environ.get('TABLE_MONTHLY')}")

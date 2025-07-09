@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>time-logger</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 </head>
@@ -11,14 +11,30 @@
 
 <h1>Log time you have worked</h1>
 
-<p>{{ message }}</p>
+<p>Use In and Out for expected 8h work days. Use OT In and OT Out for any other time (overtime).</p>
 
+{{ monthly.year }}-{{ monthly.month }}
+<ul>
+    <li>Worked hours this month:{{ monthly.worked_hours }}</li>
+    <li>Worked OT hours this mont   h: {{ monthly.worked_ot_hours }}</li>
+    <li>Monthly saldo: {{ monthly.monthly_saldo }}</li>
+</ul>
+
+<form action="/">
+    <label>Select date</label>
+    <input type="text" id="date" name="date" value="{{ date }}">
+    <button type="submit">Change</button>
+</form>
+
+
+<fieldset><legend>{{ date }}</legend>
 <form action="/add/" method="POST">
+    <input type="hidden" id="date" name="date" value="{{ date }}">
     <select name="event" id="event">
         <option value="in">In</option>
         <option value="out">Out</option>
-        <option value="out">OT In</option>
-        <option value="out">OT Out</option>
+        <option value="ot-in">OT In</option>
+        <option value="ot-out">OT Out</option>
     </select>
     <label for="time">Time</label>
     <input type="text" id="time" name="time">
@@ -28,40 +44,91 @@
 </form>
 
 
+<form action="/update/" method="POST">
+    <input type="hidden" id="date" name="date" value="{{ date }}">
+    <fieldset><legend>Edit</legend>
+    {% for item in events %}
+        {% if item.date == date %}
+            <select name="event" id="event">
+                {% if item.event == "in" %}
+                    <option value="in" selected>In</option>
+                {% else %}
+                    <option value="in">In</option>
+                {% endif %}
 
-<ul id="logged_time">
-    {% for item in logged_time %}
+                {% if item.event == "out" %}
+                    <option value="out" selected>Out</option>
+                {% else %}
+                    <option value="out">Out</option>
+                {% endif %}
+
+                {% if item.event == "ot-in" %}
+                    <option value="ot-in" selected>OT In</option>
+                {% else %}
+                    <option value="ot-in">OT In</option>
+                {% endif %}
+
+                {% if item.event == "ot-out" %}
+                    <option value="ot-out" selected>OT Out</option>
+                {% else %}
+                    <option value="ot-out">OT Out</option>
+                {% endif %}
+            </select>
+            <label for="time">Time</label>
+            <input type="text" id="time" name="time" value="{{ item.time }}">
+            <label for="comment">Comment</label>
+            <input type="text" id="comment" name="comment" value="{{ item.comment }}">
+            <a href="/delete/?id={{ item.id }}&date={{ date }}" id="delete">❌</a>
+            <br />
+        {% endif %}
+    {% endfor %}
+
+    <input type="submit" value="Update">
+    </fieldset>
+</form>
+</fieldset>
+
+
+
+
+
+<!--
+<ul id="events">
+    {% for item in events %}
         <li>
             {{ item.date }}
             {{ item.event }}
             {{ item.time }}
             {{ item.comment }}
-            <a href="delete=?{{ item.id }}" id="delete">❌</a>
-            <a href="update=?{{ item.id }}" id="update">✏️</a>
         </li>
+        
+        {% set current_date = item.date %}
+        
     {% endfor %}
 </ul>
+-->
 
-
-Static examples below:
-
-
-<ul>
-    <li>2025-06-18 In 07:30 ❌ ✏️</li>
-    <li>2025-06-18 Out 11:30 ❌ ✏️</li>
+{% for d in daily %}
+<ul id="events">
+        {% for item in events %}
+            {% if d.date == item.date %}
+            <li>
+                {{ item.date }}
+                {{ item.event }}
+                {{ item.time }}
+                {{ item.comment }}
+            </li>
+            {% endif %}
+        {% endfor %}   
 </ul>
-<input type="submit" value="End the day">
-<p>Worked: 4h</p>
-<p>Day saldo: -4h</p>
-
 <ul>
-    <li>2025-06-17 In 07:30 ❌ ✏️</li>
-    <li>2025-06-17 Out 11:30 ❌ ✏️</li>
-    <li>2025-06-17 In 12:30 ❌ ✏️</li>
-    <li>2025-06-17 Out 16:30 ❌ ✏️</li>
-</ul>
-<p>Worked: 8h</p>
-<p>Day saldo: 0</p>
+    <li>Worked (minutes): {{ d.worked_hours }}</li>
+    <li>Worked OT (minutes): {{ d.worked_ot_hours }}</li>
+    <li>Day saldo (excluding OT): {{ d.daily_saldo }}</li>
+    </ul>
+<hr>
+{% endfor %}
+
 
 </body>
 </html>

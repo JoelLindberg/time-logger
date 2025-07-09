@@ -12,24 +12,34 @@ To keep track of your working hours
 *I will initially not care about sanitizing data. The primary goal is to make things work. Second step is to find a decent way to make sure we protect ourselves against SQL injection.*
 
 
+## Deployment
+
+1. `docker build -t time-logger .`
+2. `mkdir db`
+3. Run one of the following:
+    * `docker compose -f compose.yml up`
+    * `docker run --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
+
+
+
 ## Development
 
 Using python-dotenv for setting env variables while developing: https://pypi.org/project/python-dotenv/
 
 1. Create `.env` and populate it with:
     ~~~shell
-    DB_FILE="time_logger.db"
+    DB_FILE="../db/time_logger.db"
     TABLE_EVENTS="events"
     TABLE_DAILY="daily"
     TABLE_MONTHLY="monthly"
     ~~~
 2. Run fastapi app: `fastapi dev time_logger.py`
 
+
 ## Dependencies
 
 * python-dotenv = variables (database table names in our case) set for development
 * python-multipart = fastapi requires this to handle form data
-
 
 
 ## Study notes and lessons learned

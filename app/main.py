@@ -11,13 +11,15 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
+import create_db
 
-load_dotenv()  # take environment variables
+load_dotenv()  # take dev environment variables
 app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None) # disable auto docs
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 
+create_db.create_db()
 
 
 def validate_log_time(log_time: str) -> list:
@@ -363,17 +365,20 @@ async def root(request: Request, date: str = ""):
     cur.execute(get_monthly)
     r = cur.fetchall()
 
-    monthly = {
-            "id": r[0][0],
-            "year": r[0][1],
-            "month": r[0][2],
-            "minutes": r[0][3],
-            "ot_minutes": r[0][4],
-            "worked_days": r[0][5],
-            "worked_hours": worked_hours(r[0][3]),
-            "worked_ot_hours": worked_hours(r[0][4]),
-            "monthly_saldo": monthly_saldo(r[0][3], r[0][5])
-        }
+    if len(r) != 0:
+        monthly = {
+                "id": r[0][0],
+                "year": r[0][1],
+                "month": r[0][2],
+                "minutes": r[0][3],
+                "ot_minutes": r[0][4],
+                "worked_days": r[0][5],
+                "worked_hours": worked_hours(r[0][3]),
+                "worked_ot_hours": worked_hours(r[0][4]),
+                "monthly_saldo": monthly_saldo(r[0][3], r[0][5])
+            }
+    else:
+        monthly = {}
 
     return templates.TemplateResponse(
         "index.html",

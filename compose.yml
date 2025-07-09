@@ -1,0 +1,15 @@
+services:
+  web:
+    image: "time-logger"
+#    environment:
+#        POSTGRES_PASSWORD: example
+#        DB_FILE: "../db/time_logger.db"
+#        TABLE_EVENTS: "events"
+#        TABLE_DAILY: "daily"
+#        TABLE_MONTHLY: "monthly"
+    volumes:
+      - type: bind
+        source: ./db
+        target: /db
+    ports:
+      - "8000:8000"

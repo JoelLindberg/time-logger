@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>time-logger</title>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css" version=7>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css" version=8>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 </head>
@@ -10,9 +10,10 @@
 <body>
 <div id="container">
 
-<h1>Log time you have worked</h1>
+<h1>Time Logger</h1>
+<h3>Log time you have worked</h3>
 
-<p>Use In and Out for expected 8h work days. Use OT In and OT Out for any other time (overtime).</p>
+<p>Use <i>In</i> and <i>Out</i> for expected 8h work days. Use <i>OT In</i> and <i>OT Out</i> for any other time (overtime).</p>
 
 <h4>Month: {{ monthly.year }}-{{ monthly.month }}</h4>
 <ul>
@@ -92,7 +93,7 @@
             <input type="text" id="comment" name="comment" value="{{ item.comment }}">
             
 
-            <!-- <a href="/delete/?id={{ item.id }}&date={{ date }}" id="delete">❌</a> -->
+            <a href="/delete/?id={{ item.id }}&date={{ date }}" class="delete-button" id="delete">❌</a>
             
         {% endif %}
         </div>

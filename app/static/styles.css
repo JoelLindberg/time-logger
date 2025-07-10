@@ -89,6 +89,10 @@ label {
   width: 90px;
 }
 
+.delete-button {
+    padding: 0.5rem;
+    text-decoration: none;
+}
 
 input[type="text"],
 textarea,

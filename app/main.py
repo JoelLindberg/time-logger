@@ -129,6 +129,13 @@ def sum_timedeltas(d_timedelta: timedelta) -> timedelta:
 
     return d_sum
 
+
+def delete_daily(date: str):
+    cur = con.cursor()
+    cur.execute(f"DELETE FROM {os.environ.get("TABLE_DAILY")} WHERE date='{date}';")
+    con.commit()
+
+
 def update_daily(date):
     # get the current date logged times from events
     current_events = ("SELECT log_id,"
@@ -437,6 +444,18 @@ async def delete(id: int, date: str):
     cur = con.cursor()
     cur.execute(f"DELETE FROM {os.environ.get("TABLE_EVENTS")} WHERE log_id = '{id}';")
     con.commit()
+
+    # if all events for a day are deleted - update daily and monthly then cleanup daily
+    select_events = ("SELECT logged_date "
+        f"FROM {os.environ.get("TABLE_EVENTS")} WHERE logged_date='{date}';")
+    cur = con.cursor()
+    cur.execute(select_events)
+    r = cur.fetchall()
+
+    if len(r) == 0:
+        update_daily(date)
+        update_monthly(date)
+        delete_daily(date)
 
     return RedirectResponse(f"/?date={date}", status_code=303)
 

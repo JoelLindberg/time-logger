@@ -2,7 +2,6 @@ services:
   web:
     image: "time-logger"
 #    environment:
-#        POSTGRES_PASSWORD: example
 #        DB_FILE: "../db/time_logger.db"
 #        TABLE_EVENTS: "events"
 #        TABLE_DAILY: "daily"
@@ -11,5 +10,6 @@ services:
       - type: bind
         source: ./db
         target: /db
+    user: ${CURRENT_UID}
     ports:
       - "8000:8000"

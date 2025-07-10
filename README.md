@@ -5,8 +5,8 @@ To keep track of your working hours
 
 **Goals:**
 
-1. Make it work: fastapi + jinja2
-2. Containerize it to allow anyone to test it easily
+- [x] Make it work: fastapi + jinja2
+- [x] Containerize it to allow anyone to test it easily
 
 
 *I will initially not care about sanitizing data. The primary goal is to make things work. Second step is to find a decent way to make sure we protect ourselves against SQL injection.*
@@ -14,12 +14,13 @@ To keep track of your working hours
 
 ## Deployment
 
-1. `docker build -t time-logger .`
+1. `sudo docker build -t time-logger .`
 2. `mkdir db`
 3. Run one of the following:
-    * `docker compose -f compose.yml up`
-    * `docker run --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
+    * `CURRENT_UID=$(id -u):$(id -g) && sudo docker compose -f compose.yml up`
+    * `sudo docker run --user $(id -u):$(id -g) --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
 
+The user it set to the current user in order to allow it smoothly to be run locally. Change this to something else if you want to run it elsewhere, and remember to make sure to set the ownership on the db/ folder accordingly.
 
 
 ## Development
@@ -33,7 +34,9 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
     TABLE_DAILY="daily"
     TABLE_MONTHLY="monthly"
     ~~~
-2. Run fastapi app: `fastapi dev time_logger.py`
+2. `source venv/bin/activate` (assumes you are in a linux environment)
+3. `cd app/`
+5. Run fastapi app: `fastapi dev main.py`
 
 
 ## Dependencies

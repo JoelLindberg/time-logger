@@ -40,7 +40,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy the entire FastAPI application code into the container.
 # This should be done after installing dependencies to benefit from layer caching.
 COPY ./app /app
-RUN mkdir /db
 
 # time-logger app variables
 ENV DB_FILE="../db/time_logger.db"
@@ -59,4 +58,5 @@ EXPOSE 8000
 # --port 8000: Specifies the port to listen on.
 # For production, consider using Gunicorn with Uvicorn workers for process management:
 # CMD ["gunicorn", "main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+# USER 1001:1001
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

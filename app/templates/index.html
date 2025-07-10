@@ -2,52 +2,62 @@
 <html lang="en">
 <head>
     <title>time-logger</title>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css" version=7>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 </head>
 
 <body>
+<div id="container">
 
 <h1>Log time you have worked</h1>
 
 <p>Use In and Out for expected 8h work days. Use OT In and OT Out for any other time (overtime).</p>
 
-{{ monthly.year }}-{{ monthly.month }}
+<h4>Month: {{ monthly.year }}-{{ monthly.month }}</h4>
 <ul>
-    <li>Worked hours this month:{{ monthly.worked_hours }}</li>
-    <li>Worked OT hours this mont   h: {{ monthly.worked_ot_hours }}</li>
-    <li>Monthly saldo: {{ monthly.monthly_saldo }}</li>
+    <li>Worked hours this month: <b>{{ monthly.worked_hours }}</b></li>
+    <li>Worked OT hours this month: <b>{{ monthly.worked_ot_hours }}</b></li>
+    <li>Monthly saldo: <b>{{ monthly.monthly_saldo }}</b></li>
 </ul>
 
-<form action="/">
-    <label>Select date</label>
-    <input type="text" id="date" name="date" value="{{ date }}">
-    <button type="submit">Change</button>
-</form>
+
 
 
 <fieldset><legend>{{ date }}</legend>
-<form action="/add/" method="POST">
-    <input type="hidden" id="date" name="date" value="{{ date }}">
-    <select name="event" id="event">
-        <option value="in">In</option>
-        <option value="out">Out</option>
-        <option value="ot-in">OT In</option>
-        <option value="ot-out">OT Out</option>
-    </select>
-    <label for="time">Time</label>
-    <input type="text" id="time" name="time">
-    <label for="comment">Comment</label>
-    <input type="text" id="comment" name="comment">
-    <input type="submit" value="Add">
+
+
+<form action="/">
+    <label class="label-1" for="date">Select date</label>
+    <input class="form-date" type="text" id="date" name="date" value="{{ date }}">
+    <button class="btn" type="submit">Change</button>
 </form>
+
+
+<form action="/add/" method="POST">
+        <input type="hidden" id="date" name="date" value="{{ date }}">
+        <label class="label-1" for="event">Event</label>
+        <select name="event" id="event">
+            <option value="in">In</option>
+            <option value="out">Out</option>
+            <option value="ot-in">OT In</option>
+            <option value="ot-out">OT Out</option>
+        </select>
+        <label for="time">Time</label>
+        <input type="text" id="time" name="time">
+        <label for="comment">Comment</label>
+        <input type="text" id="comment" name="comment">
+     <input class="btn" type="submit" value="Add">
+</form>
+
 
 
 <form action="/update/" method="POST">
     <input type="hidden" id="date" name="date" value="{{ date }}">
     <fieldset><legend>Edit</legend>
+    
     {% for item in events %}
+        <div class="form-group">
         {% if item.date == date %}
             <select name="event" id="event">
                 {% if item.event == "in" %}
@@ -76,14 +86,19 @@
             </select>
             <label for="time">Time</label>
             <input type="text" id="time" name="time" value="{{ item.time }}">
+            
             <label for="comment">Comment</label>
+            
             <input type="text" id="comment" name="comment" value="{{ item.comment }}">
-            <a href="/delete/?id={{ item.id }}&date={{ date }}" id="delete">❌</a>
-            <br />
+            
+
+            <!-- <a href="/delete/?id={{ item.id }}&date={{ date }}" id="delete">❌</a> -->
+            
         {% endif %}
+        </div>
     {% endfor %}
 
-    <input type="submit" value="Update">
+    <input class="btn" type="submit" value="Update">
     </fieldset>
 </form>
 </fieldset>
@@ -91,44 +106,27 @@
 
 
 
-
-<!--
-<ul id="events">
-    {% for item in events %}
-        <li>
-            {{ item.date }}
-            {{ item.event }}
-            {{ item.time }}
-            {{ item.comment }}
-        </li>
-        
-        {% set current_date = item.date %}
-        
-    {% endfor %}
-</ul>
--->
-
 {% for d in daily %}
 <ul id="events">
         {% for item in events %}
             {% if d.date == item.date %}
             <li>
-                {{ item.date }}
-                {{ item.event }}
-                {{ item.time }}
+                <b>{{ item.date }}</b>,
+                {{ item.event }},
+                {{ item.time }},
                 {{ item.comment }}
             </li>
             {% endif %}
         {% endfor %}   
 </ul>
 <ul>
-    <li>Worked (minutes): {{ d.worked_hours }}</li>
-    <li>Worked OT (minutes): {{ d.worked_ot_hours }}</li>
-    <li>Day saldo (excluding OT): {{ d.daily_saldo }}</li>
+    <li>Worked: <b>{{ d.worked_hours }}</b></li>
+    <li>Worked OT: <b>{{ d.worked_ot_hours }}</b></li>
+    <li>Daily saldo (excluding OT): <b>{{ d.daily_saldo }}</b></li>
     </ul>
 <hr>
 {% endfor %}
 
-
+</div>
 </body>
 </html>

@@ -1,9 +1,170 @@
+
+
+
+
+/* --- Global Styles & Variables --- */
+:root {
+    --primary-color: #007bff; /* Blue for accents, buttons */
+    --primary-hover-color: #0056b3;
+    --secondary-color: #6c757d; /* Gray for secondary text, borders */
+    --background-color: #f8f9fa; /* Light almost white background */
+    --surface-color: #ffffff; /* Pure white for cards, forms */
+    --text-color: #212529; /* Dark gray for main text */
+    --light-text-color: #495057; /* Slightly lighter for secondary text */
+    --border-color: #dee2e6; /* Light gray for borders */
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+
+    --border-radius-small: 5px;
+    --border-radius-medium: 8px;
+    --spacing-unit: 1rem; /* 16px default */
+
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.4;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for longer content */
+    min-height: 100vh;
+}
+
+
+.container {
+    background-color: var(--surface-color);
+    padding: calc(2 * var(--spacing-unit));
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 4px 15px var(--shadow-light);
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color);
+    margin-top: 0;
+    margin-bottom: var(--spacing-unit);
+}
+
+p {
+    margin-bottom: var(--spacing-unit);
+}
+
+
+/* --- Forms --- */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: var(--spacing-unit);
+    margin-bottom: var(--spacing-unit);
+}
+
+.form-date {
+  width: 120px;
+}
+
+.form-group {
+    margin-bottom: var(--spacing-unit);
+}
+
 legend {
   background-color: #000;
   color: #fff;
   padding: 3px 6px;
+  border-radius: var(--border-radius-small);
 }
 
-input {
-  margin: 0.4rem;
+label {       
+    align-content: space-around;
+    font-weight: 600;
+    color: var(--light-text-color);
+}
+
+.label-1 {
+  width: 90px;
+}
+
+
+input[type="text"],
+textarea,
+select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; /* Ensures padding doesn't increase width */
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Primary color with transparency */
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+
+/* --- Buttons --- */
+.btn {
+    display: inline-flex; /* Use flex for centering content */
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-medium);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px var(--shadow-light);
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--surface-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover-color);
+    box-shadow: 0 4px 10px var(--shadow-medium);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--surface-color);
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    box-shadow: 0 4px 10px var(--shadow-medium);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    box-shadow: none;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: var(--surface-color);
+    box-shadow: 0 2px 5px var(--shadow-light);
+    transform: translateY(-1px);
 }

@@ -12,12 +12,12 @@ load_dotenv()  # take dev environment variables
 
 
 def create_db():
+    """Create the database and tables if they don't exist"""
     TABLE_EVENTS_EXISTS = False
     TABLE_DAILY_EXISTS = False
     TABLE_MONTHLY_EXISTS = False
 
-    # Check if database exists - otherwise create it
-    # Need to create this for sqlite to check for the database file instead
+    # Create the sqlite database it it doesn't exist
     if os.path.exists(f"./{os.environ.get('DB_FILE')}"):
         if os.path.isfile(f"./{os.environ.get('DB_FILE')}") is not True:
             print("Could not create the database: There is a directory named the same as the database that is being created")
@@ -27,7 +27,7 @@ def create_db():
     con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 
 
-    # log_time exists? - otherwise create it
+    # Create table events if it doesn't exist
     cur = con.cursor()
     cur.execute("SELECT name FROM sqlite_master")
     r = cur.fetchall()
@@ -35,7 +35,6 @@ def create_db():
     for i in r:
         if i[0] == "events":
             TABLE_EVENTS_EXISTS = True
-            #print(f"Table exists: {i[0]}")
 
     if TABLE_EVENTS_EXISTS == False:
         tables = f"""CREATE TABLE {os.environ.get('TABLE_EVENTS')} (
@@ -52,7 +51,7 @@ def create_db():
         console.print(text)
 
 
-    # sum_time exists? - otherwise create it
+    # Create table daily it it doesn't exist
     cur = con.cursor()
     cur.execute("SELECT name FROM sqlite_master")
     r = cur.fetchall()
@@ -60,7 +59,6 @@ def create_db():
     for i in r:
         if i[0] == "daily":
             TABLE_DAILY_EXISTS = True
-            #print(f"Table exists: {i[0]}")
 
     if TABLE_DAILY_EXISTS == False:
         tables = f"""CREATE TABLE {os.environ.get('TABLE_DAILY')} (
@@ -75,7 +73,7 @@ def create_db():
         console.print(text)
 
 
-    # saldo_time exists? - otherwise create it
+    # Create table monthly it it doesn't exist
     cur = con.cursor()
     cur.execute("SELECT name FROM sqlite_master")
     r = cur.fetchall()
@@ -83,7 +81,6 @@ def create_db():
     for i in r:
         if i[0] == "monthly":
             TABLE_MONTHLY_EXISTS = True
-            #print(f"Table exists: {i[0]}")
 
     if TABLE_MONTHLY_EXISTS == False:
         tables = f"""CREATE TABLE {os.environ.get('TABLE_MONTHLY')} (

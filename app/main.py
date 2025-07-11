@@ -22,28 +22,21 @@ con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 create_db.create_db()
 
 
-def validate_log_time(log_time: str) -> list:
-    '''Validates input and returns a date in the format 14:00 2025-06-14.
+def validate_log_time(log_time: str) -> str:
+    '''Validates input and returns a date in the format 14:00.
     
-    :param log_time: Accepts formats "14:00" or "14:00 2025-06-14".
-    If only 14:00 is provided it will automatically append todays date in\
-    the format 2025-06-14.
+    :param log_time: Accepts format "14:00".
     '''
+    p = "^([0-1][0-9]|2[0-4]):[0-5][0-9]?"
 
-    time_date = []
-    p1 = "^[0-9]{2}:[0-9]{2}?"
-    p2 = "^[0-9]{2}:[0-9]{2} [0-9]{4}-[0-9]{2}-[0-9]{2}?"
+    if len(log_time) == 0:
+        raise "Something went wrong. No time input received."
 
-    if re.fullmatch(p1, log_time) != None:
-        time_date.append(log_time)
-        time_date.append(datetime.now().strftime("%Y-%m-%d"))
-    elif re.fullmatch(p2, log_time) != None:
-        time_date = log_time.split()
+    if re.fullmatch(p, log_time) != None:
+        return log_time
+    else:
+        return ""
 
-    if len(time_date) == 0:
-        raise "Something went wrong. Possibly incorrect time and date format entered."
-
-    return time_date
 
 
 def calc_in_out(events: list) -> int | None:
@@ -384,9 +377,6 @@ async def root(request: Request, selected_date: str = ""):
 
 @app.post("/add/")
 async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form()], time: Annotated[str, Form()], comment: Annotated[str, Form()]):
-
-    time_date = validate_log_time(time) # this method should be changed
-
     cur = con.cursor()
     insert_query = (f"INSERT INTO {os.environ.get("TABLE_EVENTS")} ("
         "logged_date,"
@@ -395,7 +385,7 @@ async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form(
         "comment) VALUES ("
         f"'{selected_date}',"
         f"'{event}',"
-        f"'{time_date[0]}',"
+        f"'{validate_log_time(time)}',"
         f"\"{comment}\");")
     cur.execute(insert_query)
     con.commit()
@@ -406,7 +396,7 @@ async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form(
         f"FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
     cur.execute(select_daily)
     r = cur.fetchall()
-    
+
     if len(r) == 0:
         cur = con.cursor()
         insert_daily = (f"INSERT INTO {os.environ.get("TABLE_DAILY")} ("
@@ -442,13 +432,6 @@ async def delete(id: int, selected_date: str):
         delete_daily(selected_date)
 
     return RedirectResponse(f"/?date={selected_date}", status_code=303)
-
-
-
-
-
-
-
 
 
 @app.post("/update/")

@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, date
 from datetime import timedelta
 from typing import Annotated
 import re
@@ -130,20 +130,21 @@ def sum_timedeltas(d_timedelta: timedelta) -> timedelta:
     return d_sum
 
 
-def delete_daily(date: str):
+def delete_daily(selected_date: str):
+    """Deletes from DAILY table based on selected_date from the main page."""
     cur = con.cursor()
-    cur.execute(f"DELETE FROM {os.environ.get("TABLE_DAILY")} WHERE date='{date}';")
+    cur.execute(f"DELETE FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
     con.commit()
 
 
-def update_daily(date):
+def update_daily(selected_date: str):
     # get the current date logged times from events
     current_events = ("SELECT log_id,"
         "logged_date,"
         "event_type,"
         "log_time,"
         f"comment FROM {os.environ.get("TABLE_EVENTS")} "
-        f"WHERE logged_date='{date}' "
+        f"WHERE logged_date='{selected_date}' "
         "ORDER BY "
         "logged_date DESC, log_time ASC;")
     cur = con.cursor()
@@ -167,7 +168,7 @@ def update_daily(date):
     if net_minutes != None:
         update_query = (f"UPDATE {os.environ.get("TABLE_DAILY")} "
             f"SET minutes='{net_minutes}' "
-            f"WHERE date='{date}';")
+            f"WHERE date='{selected_date}';")
         cur = con.cursor()
         cur.execute(update_query)
         con.commit()
@@ -181,7 +182,7 @@ def update_daily(date):
     if net_ot_minutes != None:
         update_query = (f"UPDATE {os.environ.get("TABLE_DAILY")} "
             f"SET ot_minutes='{net_ot_minutes}' "
-            f"WHERE date='{date}';")
+            f"WHERE date='{selected_date}';")
         cur = con.cursor()
         cur.execute(update_query)
         con.commit()
@@ -197,46 +198,46 @@ def worked_hours(worked_minutes: int) -> str:
     return f"{hours}h {minutes}m"
     
 
-def daily_saldo(worked_minutes: int) -> str:
-    """Present saldo on the page"""
+def daily_balance(worked_minutes: int) -> str:
+    """Present balance on the page"""
     # 8h work expected = 480 minutes
-    daily_saldo = (worked_minutes - 480)
+    daily_balance = (worked_minutes - 480)
 
-    if daily_saldo < 0:
-        minutes = daily_saldo % 60
-        hours = int((daily_saldo - minutes) / 60)
+    if daily_balance < 0:
+        minutes = daily_balance % 60
+        hours = int((daily_balance - minutes) / 60)
         -abs(minutes) # convert the number to negative
         -abs(hours) # convert the number to negative
         return f"{hours}h {minutes}m"
     else:
-        minutes = daily_saldo % 60
-        hours = int((daily_saldo - minutes) / 60)
+        minutes = daily_balance % 60
+        hours = int((daily_balance - minutes) / 60)
         return f"{hours}h {minutes}m"
 
-def monthly_saldo(worked_minutes: int, worked_days: int) -> str:
+def monthly_balance(worked_minutes: int, worked_days: int) -> str:
     # worked hours
     #worked_hours = (worked_minutes / 60)
     expected_minutes = worked_days * 8 * 60
-    monthly_saldo = worked_minutes - expected_minutes
+    monthly_balance = worked_minutes - expected_minutes
 
-    if monthly_saldo < 0:
-        minutes = monthly_saldo % 60
-        hours = int((monthly_saldo - minutes) / 60)
+    if monthly_balance < 0:
+        minutes = monthly_balance % 60
+        hours = int((monthly_balance - minutes) / 60)
         minutes = -abs(minutes)
         hours = -abs(hours)
 
         return f"{hours}h {minutes}m"
     else:
-        minutes = monthly_saldo % 60
-        hours = int((monthly_saldo - minutes) / 60)
+        minutes = monthly_balance % 60
+        hours = int((monthly_balance - minutes) / 60)
 
         return f"{hours}h {minutes}m"
 
 
-def update_monthly(date: str):
-    year_month = date[:-3]
-    month = date[5:-3]
-    year = date[:-6]
+def update_monthly(selected_date: str):
+    year_month = selected_date[:-3]
+    month = selected_date[5:-3]
+    year = selected_date[:-6]
 
     # get the sum (minutes) for the month
     daily = ("SELECT SUM(minutes) "
@@ -288,29 +289,11 @@ def update_monthly(date: str):
     con.commit()
 
 
-def monthly_worked(date):
-    # get all days from DAILY where minutes > 0 and multiply this with 480 (8h) for each day
-    current_month = date[:-3]
-    
-    daily = ("SELECT COUNT(minutes) "
-        f"FROM {os.environ.get("TABLE_DAILY")} "
-        f"WHERE minutes>0 AND date like '{current_month}%'"
-        ";")
-    cur = con.cursor()
-    cur.execute(daily)
-    r = cur.fetchall()
-    worked_days = r[0][0]
-    
-    worked_minutes = (worked_days * 480)
-
-
-
 
 @app.get("/")
-async def root(request: Request, date: str = ""):
-
-    if date == "":
-       date = datetime.today().strftime('%Y-%m-%d')
+async def root(request: Request, selected_date: str = ""):
+    if selected_date == "":
+       selected_date = datetime.today().strftime('%Y-%m-%d')
 
     show_data = ("SELECT log_id,"
         "logged_date,"
@@ -355,7 +338,7 @@ async def root(request: Request, date: str = ""):
                 "ot_minutes": l[3],
                 "worked_hours": worked_hours(l[2]),
                 "worked_ot_hours": worked_hours(l[3]),
-                "daily_saldo": daily_saldo(l[2])
+                "daily_balance": daily_balance(l[2])
             }
         )
     
@@ -366,7 +349,7 @@ async def root(request: Request, date: str = ""):
         "ot_minutes,"
         "worked_days "
         f"FROM {os.environ.get("TABLE_MONTHLY")} "
-        f"WHERE month='{date[5:-3]}'"
+        f"WHERE month='{selected_date[5:-3]}'"
         "ORDER BY year DESC, month ASC;")
     cur = con.cursor()
     cur.execute(get_monthly)
@@ -382,7 +365,8 @@ async def root(request: Request, date: str = ""):
                 "worked_days": r[0][5],
                 "worked_hours": worked_hours(r[0][3]),
                 "worked_ot_hours": worked_hours(r[0][4]),
-                "monthly_saldo": monthly_saldo(r[0][3], r[0][5])
+                "monthly_balance": monthly_balance(r[0][3], r[0][5]),
+                "month_full": date(1999, int(selected_date[5:-3]), 1).strftime("%B")
             }
     else:
         monthly = {}
@@ -391,7 +375,7 @@ async def root(request: Request, date: str = ""):
         "index.html",
         {
             "request": request,
-            "date": date,
+            "date": selected_date,
             "events": events,
             "daily":  daily,
             "monthly": monthly
@@ -399,7 +383,7 @@ async def root(request: Request, date: str = ""):
 
 
 @app.post("/add/")
-async def add(date: Annotated[str, Form()], event: Annotated[str, Form()], time: Annotated[str, Form()], comment: Annotated[str, Form()]):
+async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form()], time: Annotated[str, Form()], comment: Annotated[str, Form()]):
 
     time_date = validate_log_time(time) # this method should be changed
 
@@ -409,7 +393,7 @@ async def add(date: Annotated[str, Form()], event: Annotated[str, Form()], time:
         "event_type,"
         "log_time,"
         "comment) VALUES ("
-        f"'{date}',"
+        f"'{selected_date}',"
         f"'{event}',"
         f"'{time_date[0]}',"
         f"\"{comment}\");")
@@ -419,7 +403,7 @@ async def add(date: Annotated[str, Form()], event: Annotated[str, Form()], time:
     # Also create an entry in the daily table for the daily net to be stored
     cur = con.cursor()
     select_daily = ("SELECT date "
-        f"FROM {os.environ.get("TABLE_DAILY")} WHERE date='{date}';")
+        f"FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
     cur.execute(select_daily)
     r = cur.fetchall()
     
@@ -428,36 +412,36 @@ async def add(date: Annotated[str, Form()], event: Annotated[str, Form()], time:
         insert_daily = (f"INSERT INTO {os.environ.get("TABLE_DAILY")} ("
             "date,"
             "minutes) VALUES ("
-            f"'{date}',"
+            f"'{selected_date}',"
             f"0);")
         cur.execute(insert_daily)
         con.commit()
 
-    update_daily(date)
-    update_monthly(date)
+    update_daily(selected_date)
+    update_monthly(selected_date)
 
-    return RedirectResponse(f"/?date={date}", status_code=303)
+    return RedirectResponse(f"/?date={selected_date}", status_code=303)
 
 
 @app.get("/delete/")
-async def delete(id: int, date: str):
+async def delete(id: int, selected_date: str):
     cur = con.cursor()
     cur.execute(f"DELETE FROM {os.environ.get("TABLE_EVENTS")} WHERE log_id = '{id}';")
     con.commit()
 
     # if all events for a day are deleted - update daily and monthly then cleanup daily
     select_events = ("SELECT logged_date "
-        f"FROM {os.environ.get("TABLE_EVENTS")} WHERE logged_date='{date}';")
+        f"FROM {os.environ.get("TABLE_EVENTS")} WHERE logged_date='{selected_date}';")
     cur = con.cursor()
     cur.execute(select_events)
     r = cur.fetchall()
 
     if len(r) == 0:
-        update_daily(date)
-        update_monthly(date)
-        delete_daily(date)
+        update_daily(selected_date)
+        update_monthly(selected_date)
+        delete_daily(selected_date)
 
-    return RedirectResponse(f"/?date={date}", status_code=303)
+    return RedirectResponse(f"/?date={selected_date}", status_code=303)
 
 
 
@@ -468,14 +452,14 @@ async def delete(id: int, date: str):
 
 
 @app.post("/update/")
-async def update(date: Annotated[str, Form()], event: Annotated[list, Form()], time: Annotated[list, Form()], comment: Annotated[list, Form()]):
+async def update(selected_date: Annotated[str, Form()], event: Annotated[list, Form()], time: Annotated[list, Form()], comment: Annotated[list, Form()]):
     # Get the current date's events from the DB
     show_data = ("SELECT log_id,"
         "logged_date,"
         "event_type,"
         "log_time,"
         f"comment FROM {os.environ.get("TABLE_EVENTS")} "
-        f"WHERE logged_date='{date}' "
+        f"WHERE logged_date='{selected_date}' "
         "ORDER BY "
         "logged_date DESC, log_time ASC;")
     cur = con.cursor()
@@ -504,7 +488,7 @@ async def update(date: Annotated[str, Form()], event: Annotated[list, Form()], t
             con.commit()
         i += 1
 
-    update_daily(date)
-    update_monthly(date)
+    update_daily(selected_date)
+    update_monthly(selected_date)
 
-    return RedirectResponse(f"/?date={date}", status_code=303)
+    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)

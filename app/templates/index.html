@@ -15,11 +15,11 @@
 
 <p>Use <i>In</i> and <i>Out</i> for expected 8h work days. Use <i>OT In</i> and <i>OT Out</i> for any other time (overtime).</p>
 
-<h4>Month: {{ monthly.year }}-{{ monthly.month }}</h4>
+<h4>{{ monthly.month_full }} {{ monthly.year }}</h4>
 <ul>
     <li>Worked hours this month: <b>{{ monthly.worked_hours }}</b></li>
     <li>Worked OT hours this month: <b>{{ monthly.worked_ot_hours }}</b></li>
-    <li>Monthly saldo: <b>{{ monthly.monthly_saldo }}</b></li>
+    <li>Monthly balance: <b>{{ monthly.monthly_balance }}</b></li>
 </ul>
 
 
@@ -36,7 +36,7 @@
 
 
 <form action="/add/" method="POST">
-        <input type="hidden" id="date" name="date" value="{{ date }}">
+        <input type="hidden" id="selected_date" name="selected_date" value="{{ date }}">
         <label class="label-1" for="event">Event</label>
         <select name="event" id="event">
             <option value="in">In</option>
@@ -54,7 +54,7 @@
 
 
 <form action="/update/" method="POST">
-    <input type="hidden" id="date" name="date" value="{{ date }}">
+    <input type="hidden" id="selected_date" name="selected_date" value="{{ date }}">
     <fieldset><legend>Edit</legend>
     
     {% for item in events %}
@@ -93,7 +93,7 @@
             <input type="text" id="comment" name="comment" value="{{ item.comment }}">
             
 
-            <a href="/delete/?id={{ item.id }}&date={{ date }}" class="delete-button" id="delete">❌</a>
+            <a href="/delete/?id={{ item.id }}&selected_date={{ date }}" class="delete-button" id="delete">❌</a>
             
         {% endif %}
         </div>
@@ -123,7 +123,7 @@
 <ul>
     <li>Worked: <b>{{ d.worked_hours }}</b></li>
     <li>Worked OT: <b>{{ d.worked_ot_hours }}</b></li>
-    <li>Daily saldo (excluding OT): <b>{{ d.daily_saldo }}</b></li>
+    <li>Daily balance (excluding OT): <b>{{ d.daily_balance }}</b></li>
     </ul>
 <hr>
 {% endfor %}

@@ -307,15 +307,32 @@ class Monthly:
             return f"{hours}h {minutes}m"
 
     @classmethod
-    def from_db_row(cls, row: tuple):
+    def from_db_row(self, row: tuple):
         if len(row) != 6:
             raise ValueError("Database row does not have the expected number of columns for Monthly.")
-        return cls(monthly_id=row[0], 
+        return self(monthly_id=row[0], 
                    year=row[1], 
                    month=row[2], 
                    minutes=row[3],
                    ot_minutes=row[4],
                    worked_days=row[5])
+
+    @classmethod
+    def get_monthly(self, selected_date: str):
+        get_monthly = ("SELECT * FROM monthly WHERE month=? ORDER BY year DESC, month ASC;")
+        cur = con.cursor()
+        cur.execute(get_monthly, (selected_date[5:-3],))
+        r = cur.fetchall()
+        
+        if len(r) == 0:
+            return None
+
+        return self(monthly_id=r[0][0], 
+                   year=r[0][1], 
+                   month=r[0][2], 
+                   minutes=r[0][3],
+                   ot_minutes=r[0][4],
+                   worked_days=r[0][5])
 
     @classmethod
     def update_monthly(self, selected_date: str):

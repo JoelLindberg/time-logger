@@ -49,19 +49,21 @@ async def root(request: Request, selected_date: str = ""):
     daily = []
     for row in r:
         daily.append(models.Daily.from_db_row(row))
-    
-    get_monthly = ("""SELECT monthly_id,
-        year,
-        month,
-        minutes,
-        ot_minutes,
-        worked_days FROM monthly WHERE month=? 
-        ORDER BY year DESC, month ASC;""")
-    cur = con.cursor()
-    cur.execute(get_monthly, (selected_date[5:-3],))
-    r = cur.fetchall()
-    if r:
-        monthly = models.Monthly.from_db_row(r[0])
+
+    monthly = models.Monthly.get_monthly(selected_date)
+
+    if monthly == None:
+        init_row = ("""INSERT INTO monthly (
+            year,
+            month,
+            minutes,
+            ot_minutes,
+            worked_days) VALUES (?,?,0,0,0);""")
+        cur = con.cursor()
+        cur.execute(init_row, (selected_date[:-6], selected_date[5:-3]))
+        con.commit()
+
+        monthly = models.Monthly.get_monthly(selected_date)
 
     return templates.TemplateResponse(
         "index.html",

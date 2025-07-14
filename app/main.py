@@ -82,18 +82,18 @@ async def add(selected_date: Annotated[str, Form()],
               event: Annotated[str, Form()],
               time: Annotated[str, Form()],
               comment: Annotated[str, Form()]):
-    event = models.Event(event_id=None,
-                         date=selected_date,
-                         event=event,
-                         time=time,
-                         comment=comment)
+    event_to_add = models.Event(event_id=None,
+                                date=selected_date,
+                                event=event,
+                                time=time,
+                                comment=comment)
     add_event = ("""INSERT INTO events (
         date,
         event,
         time,
         comment) VALUES (?,?,?,?);""")
     cur = con.cursor()
-    cur.execute(add_event, (event.date, event.event, event.time, event.comment))
+    cur.execute(add_event, (event_to_add.date, event_to_add.event, event_to_add.time, event_to_add.comment))
     con.commit()
 
     # Also create an entry in the daily table for the daily net to be stored

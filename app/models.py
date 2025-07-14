@@ -41,7 +41,7 @@ class Event:
         if re.fullmatch(p, log_time) != None:
             return log_time
         else:
-            return ""
+            raise AttributeError("Invalid time input received.")
 
     def to_dict(self) -> dict:
         """
@@ -248,7 +248,7 @@ class Daily:
     def delete_daily(self, selected_date: str):
         """Deletes from DAILY table based on selected_date from the main page."""
         cur = con.cursor()
-        cur.execute(f"DELETE FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
+        cur.execute("DELETE FROM daily WHERE date=?;", (selected_date,))
         con.commit()
 
 

@@ -2,6 +2,7 @@
 
 To keep track of your working hours
 
+![alt text](logging_time.gif "Logging time")
 
 **Goals:**
 
@@ -18,7 +19,7 @@ To keep track of your working hours
 1. `sudo docker build -t time-logger .`
 2. `mkdir db`
 3. Run one of the following:
-    * `CURRENT_UID=$(id -u):$(id -g) && sudo docker compose -f compose.yml up`
+    * `CURRENT_UID=$(id -u):$(id -g) && sudo -E docker compose -f compose.yml up`
     * `sudo docker run --user $(id -u):$(id -g) --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
 
 The user it set to the current user in order to allow it smoothly to be run locally. Change this to something else if you want to run it elsewhere, and remember to make sure to set the ownership on the db/ folder accordingly.

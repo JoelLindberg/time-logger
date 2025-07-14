@@ -16,11 +16,11 @@ def calc_worked_hours(worked_minutes: int) -> str:
 
 
 class Event:
-    def __init__(self, 
+    def __init__(self,
                  event_id: int | None,
-                 date: str, 
-                 event: str, 
-                 time: str, 
+                 date: str,
+                 event: str,
+                 time: str,
                  comment: str):
         self.event_id = event_id
         self.date = date
@@ -30,7 +30,7 @@ class Event:
 
     def validate_log_time(self, log_time: str) -> str:
         '''Validates input and returns a date in the format 14:00.
-        
+
         :param log_time: Accepts format "14:00".
         '''
         p = "^([0-1][0-9]|2[0-4]):[0-5][0-9]?"
@@ -74,11 +74,11 @@ class Event:
         # Basic validation: ensure the row has enough elements
         if len(row) != 5:
             raise ValueError("Database row does not have the expected number of columns for User.")
-        return self(event_id=row[0], 
-                   date=row[1], 
-                   event=row[2], 
-                   time=row[3], 
-                   comment=row[4])
+        return self(event_id=row[0],
+                    date=row[1],
+                    event=row[2],
+                    time=row[3],
+                    comment=row[4])
 
 
 class Daily:
@@ -91,9 +91,9 @@ class Daily:
         self.date = date
         self.minutes = minutes
         self.ot_minutes = ot_minutes
-        self.worked_hours = calc_worked_hours(self.minutes) # not from DB, computed
-        self.worked_ot_hours = calc_worked_hours(self.ot_minutes) # not from DB, computed
-        self.daily_balance = self.daily_balance(self.minutes) # not from DB, computed
+        self.worked_hours = calc_worked_hours(self.minutes)  # not from DB, computed
+        self.worked_ot_hours = calc_worked_hours(self.ot_minutes)  # not from DB, computed
+        self.daily_balance = self.daily_balance(self.minutes)  # not from DB, computed
 
     def to_dict(self) -> dict:
         return {
@@ -114,8 +114,8 @@ class Daily:
         if daily_balance < 0:
             minutes = daily_balance % 60
             hours = int((daily_balance - minutes) / 60)
-            -abs(minutes) # convert the number to negative
-            -abs(hours) # convert the number to negative
+            -abs(minutes)  # convert the number to negative
+            -abs(hours)  # convert the number to negative
             return f"{hours}h {minutes}m"
         else:
             minutes = daily_balance % 60
@@ -146,11 +146,9 @@ class Daily:
             elif i.event == "in" and previous_event == "in":
                 print("Incorrect time log event order logged. 'in' is followed by 'in'.")
                 incorrect_order = True
-                #raise ValueError("Incorrect time log event order logged. 'in' is followed by 'in'.")
             elif i.event == "out" and previous_event == "out":
                 print("Incorrect time log event order logged. 'out' is followed by 'out'.")
                 incorrect_order = True
-                #raise ValueError("Incorrect time log event order logged. 'out' is followed by 'out'.")
             elif i.event == "in":
                 previous_event = "in"
             idx += 1
@@ -160,7 +158,7 @@ class Daily:
 
         # calculate net minutes
         # update daily with minutes for the current day
-        net_minutes = d_sum.seconds / 60 # add this value to the DB DAILY
+        net_minutes = d_sum.seconds / 60  # add this value to the DB DAILY
 
         if incorrect_order == True:
             return None
@@ -183,11 +181,9 @@ class Daily:
             elif i.event == "ot-in" and previous_event == "ot-in":
                 print("Incorrect time log event order logged. 'ot-in' is followed by 'ot-in'.")
                 incorrect_order = True
-                #raise ValueError("Incorrect time log event order logged. 'ot-in' is followed by 'ot-in'.")
             elif i.event == "ot-out" and previous_event == "ot-out":
                 print("Incorrect time log event order logged. 'ot-out' is followed by 'ot-out'.")
                 incorrect_order = True
-                #raise ValueError("Incorrect time log event order logged. 'ot-out' is followed by 'ot-out'.")
             elif i.event == "ot-in":
                 previous_event = "ot-in"
             idx += 1
@@ -197,7 +193,7 @@ class Daily:
 
         # calculate net minutes
         # update daily with minutes for the current day
-        net_ot_minutes = d_sum.seconds / 60 # add this value to the DB DAILY
+        net_ot_minutes = d_sum.seconds / 60  # add this value to the DB DAILY
 
         if incorrect_order == True:
             return None
@@ -208,10 +204,10 @@ class Daily:
     def from_db_row(self, row: tuple):
         if len(row) != 4:
             raise ValueError("Database row does not have the expected number of columns for Daily.")
-        return self(daily_id=row[0], 
-                   date=row[1], 
-                   minutes=row[2], 
-                   ot_minutes=row[3])
+        return self(daily_id=row[0],
+                    date=row[1],
+                    minutes=row[2],
+                    ot_minutes=row[3])
 
     @classmethod
     def update_daily(self, selected_date: str):
@@ -227,7 +223,7 @@ class Daily:
         events = []
         for row in r:
             events.append(Event.from_db_row(row))
-        
+
         net_minutes = self.calc_in_out(self, events=events)
         net_ot_minutes = self.calc_otin_otout(self, events=events)
 
@@ -239,7 +235,7 @@ class Daily:
             con.commit()
         else:
             print("Updating nothing in DAILY")
-        
+
         if net_ot_minutes != None:
             update_query = ("UPDATE daily SET ot_minutes=? WHERE date=?;")
             cur = con.cursor()
@@ -270,8 +266,8 @@ class Monthly:
         self.minutes = minutes
         self.ot_minutes = ot_minutes
         self.worked_days = worked_days
-        self.worked_hours = calc_worked_hours(self.minutes) # not from DB, computed
-        self.worked_ot_hours = calc_worked_hours(self.ot_minutes) # not from DB, computed
+        self.worked_hours = calc_worked_hours(self.minutes)  # not from DB, computed
+        self.worked_ot_hours = calc_worked_hours(self.ot_minutes)  # not from DB, computed
         self.monthly_balance = self.monthly_balance(self.minutes, self.worked_days)  # not from DB, computed
 
     def to_dict(self) -> dict:
@@ -288,8 +284,6 @@ class Monthly:
         }
 
     def monthly_balance(self, worked_minutes: int, worked_days: int) -> str:
-        # worked hours
-        #worked_hours = (worked_minutes / 60)
         expected_minutes = worked_days * 8 * 60
         monthly_balance = worked_minutes - expected_minutes
 
@@ -310,12 +304,12 @@ class Monthly:
     def from_db_row(self, row: tuple):
         if len(row) != 6:
             raise ValueError("Database row does not have the expected number of columns for Monthly.")
-        return self(monthly_id=row[0], 
-                   year=row[1], 
-                   month=row[2], 
-                   minutes=row[3],
-                   ot_minutes=row[4],
-                   worked_days=row[5])
+        return self(monthly_id=row[0],
+                    year=row[1],
+                    month=row[2],
+                    minutes=row[3],
+                    ot_minutes=row[4],
+                    worked_days=row[5])
 
     @classmethod
     def get_monthly(self, selected_date: str):
@@ -323,16 +317,16 @@ class Monthly:
         cur = con.cursor()
         cur.execute(get_monthly, (selected_date[5:-3],))
         r = cur.fetchall()
-        
+
         if len(r) == 0:
             return None
 
-        return self(monthly_id=r[0][0], 
-                   year=r[0][1], 
-                   month=r[0][2], 
-                   minutes=r[0][3],
-                   ot_minutes=r[0][4],
-                   worked_days=r[0][5])
+        return self(monthly_id=r[0][0],
+                    year=r[0][1],
+                    month=r[0][2],
+                    minutes=r[0][3],
+                    ot_minutes=r[0][4],
+                    worked_days=r[0][5])
 
     @classmethod
     def update_monthly(self, selected_date: str):
@@ -364,12 +358,12 @@ class Monthly:
         r = cur.fetchall()
         worked_days = r[0][0]
 
-        insert_monthly = ("INSERT OR REPLACE INTO monthly ("
-            "year,"
-            "month,"
-            "minutes,"
-            "ot_minutes,"
-            "worked_days) VALUES (?,?,?,?,?);")
+        insert_monthly = ("""INSERT OR REPLACE INTO monthly (
+            year,
+            month,
+            minutes,
+            ot_minutes,
+            worked_days) VALUES (?,?,?,?,?);""")
         cur = con.cursor()
         cur.execute(insert_monthly, (year, month, minutes, ot_minutes, worked_days))
         con.commit()

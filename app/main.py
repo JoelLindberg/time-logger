@@ -14,7 +14,7 @@ import models
 
 
 load_dotenv()  # take dev environment variables
-app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None) # disable auto docs
+app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)  # disable auto docs
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
@@ -25,7 +25,7 @@ create_db.create_db()
 @app.get("/")
 async def root(request: Request, selected_date: str = ""):
     if selected_date == "":
-       selected_date = datetime.today().strftime('%Y-%m-%d')
+        selected_date = datetime.today().strftime('%Y-%m-%d')
 
     get_events = """SELECT event_id,
         date,
@@ -38,7 +38,7 @@ async def root(request: Request, selected_date: str = ""):
     events = []
     for row in r:
         events.append(models.Event.from_db_row(row))
-    
+
     daily = ("""SELECT daily_id,
         date,
         minutes,
@@ -78,12 +78,15 @@ async def root(request: Request, selected_date: str = ""):
 
 
 @app.post("/add/")
-async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form()], time: Annotated[str, Form()], comment: Annotated[str, Form()]):
-    event = models.Event(event_id = None,
-                         date = selected_date,
-                         event = event,
-                         time = time,
-                         comment = comment)
+async def add(selected_date: Annotated[str, Form()],
+              event: Annotated[str, Form()],
+              time: Annotated[str, Form()],
+              comment: Annotated[str, Form()]):
+    event = models.Event(event_id=None,
+                         date=selected_date,
+                         event=event,
+                         time=time,
+                         comment=comment)
     add_event = ("""INSERT INTO events (
         date,
         event,
@@ -127,7 +130,7 @@ async def delete(event_id: int, selected_date: str, event: str):
     events = []
     for row in r:
         events.append(models.Event.from_db_row(row))
-    
+
     if event == "in" or event == "out":
         event_type = "normal"
     else:
@@ -154,13 +157,16 @@ async def delete(event_id: int, selected_date: str, event: str):
 
 
 @app.post("/update/")
-async def update(selected_date: Annotated[str, Form()], event: Annotated[list, Form()], time: Annotated[list, Form()], comment: Annotated[list, Form()]):
+async def update(selected_date: Annotated[str, Form()],
+                 event: Annotated[list, Form()],
+                 time: Annotated[list, Form()],
+                 comment: Annotated[list, Form()]):
     # Get the current date's events from the DB
-    get_events = ("SELECT event_id,"
-        "date,"
-        "event,"
-        "time,"
-        "comment FROM events WHERE date=? ORDER BY date DESC, time ASC;")
+    get_events = ("""SELECT event_id,
+        date,
+        event,
+        time,
+        comment FROM events WHERE date=? ORDER BY date DESC, time ASC;""")
     cur = con.cursor()
     cur.execute(get_events, (selected_date,))
     r = cur.fetchall()
@@ -179,10 +185,10 @@ async def update(selected_date: Annotated[str, Form()], event: Annotated[list, F
             changed = True
 
         if changed == True:
-            update_query = ("""UPDATE events 
-                SET event=?, 
-                time=?, 
-                comment=? 
+            update_query = ("""UPDATE events
+                SET event=?,
+                time=?,
+                comment=?
                 WHERE event_id=?;""")
             cur = con.cursor()
             cur.execute(update_query, (event[i], time[i], comment[i], e.event_id))

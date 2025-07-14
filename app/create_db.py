@@ -26,7 +26,6 @@ def create_db():
 
     con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 
-
     # Create table events if it doesn't exist
     cur = con.cursor()
     cur.execute("SELECT name FROM sqlite_master")
@@ -37,7 +36,7 @@ def create_db():
             TABLE_EVENTS_EXISTS = True
 
     if TABLE_EVENTS_EXISTS == False:
-        tables = f"""CREATE TABLE events (
+        tables = """CREATE TABLE events (
             event_id INTEGER PRIMARY KEY,
             date date,
             event varchar(3),
@@ -46,10 +45,9 @@ def create_db():
             UNIQUE(date, time)
             );"""
         cur.execute(tables)
-        text = Text(f"Created table events")
+        text = Text("Created table events")
         text.stylize("green")
         console.print(text)
-
 
     # Create table daily it it doesn't exist
     cur = con.cursor()
@@ -61,17 +59,16 @@ def create_db():
             TABLE_DAILY_EXISTS = True
 
     if TABLE_DAILY_EXISTS == False:
-        tables = f"""CREATE TABLE daily (
+        tables = """CREATE TABLE daily (
             daily_id INTEGER PRIMARY KEY,
             date date UNIQUE,
             minutes int,
             ot_minutes int
             );"""
         cur.execute(tables)
-        text = Text(f"Created table daily")
+        text = Text("Created table daily")
         text.stylize("green")
         console.print(text)
-
 
     # Create table monthly it it doesn't exist
     cur = con.cursor()
@@ -83,7 +80,7 @@ def create_db():
             TABLE_MONTHLY_EXISTS = True
 
     if TABLE_MONTHLY_EXISTS == False:
-        tables = f"""CREATE TABLE monthly (
+        tables = """CREATE TABLE monthly (
             monthly_id INTEGER PRIMARY KEY,
             year varchar(4),
             month varchar(2),
@@ -93,6 +90,6 @@ def create_db():
             UNIQUE(year, month)
             );"""
         cur.execute(tables)
-        text = Text(f"Created table monthly")
+        text = Text("Created table monthly")
         text.stylize("green")
         console.print(text)

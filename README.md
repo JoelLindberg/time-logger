@@ -36,6 +36,12 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
 3. `cd app/`
 5. Run fastapi app: `fastapi dev main.py`
 
+Verify newly added code passes flake8 tests:
+1. `source venv/bin/activate`
+2. `flake8 app/`
+
+*Intentionally excluded a few things in flake8 to stay closer to the readability of other similar c-like languages.*
+
 
 ## Dependencies
 

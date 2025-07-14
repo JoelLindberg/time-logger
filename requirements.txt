@@ -1,3 +1,4 @@
 fastapi[standard]
 python-multipart
 python-dotenv
+flake8

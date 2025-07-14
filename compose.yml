@@ -3,9 +3,6 @@ services:
     image: "time-logger"
 #    environment:
 #        DB_FILE: "../db/time_logger.db"
-#        TABLE_EVENTS: "events"
-#        TABLE_DAILY: "daily"
-#        TABLE_MONTHLY: "monthly"
     volumes:
       - type: bind
         source: ./db

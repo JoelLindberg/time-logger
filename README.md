@@ -7,9 +7,10 @@ To keep track of your working hours
 
 - [x] Make it work: fastapi + jinja2
 - [x] Containerize it to allow anyone to test it easily
-
-
-*I will initially not care about sanitizing data. The primary goal is to make things work. Second step is to find a decent way to make sure we protect ourselves against SQL injection.*
+- [x] Add data models
+    - Not a very strict implementation, but tried to collect the data and its logic
+- [x] Protect against SQL injection
+    - sqlite3 lib parameters used
 
 
 ## Deployment
@@ -30,9 +31,6 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
 1. Create `.env` and populate it with:
     ~~~shell
     DB_FILE="../db/time_logger.db"
-    TABLE_EVENTS="events"
-    TABLE_DAILY="daily"
-    TABLE_MONTHLY="monthly"
     ~~~
 2. `source venv/bin/activate` (assumes you are in a linux environment)
 3. `cd app/`
@@ -49,7 +47,10 @@ Using python-dotenv for setting env variables while developing: https://pypi.org
 
 ### Lesson learned
 
-This little exercise taught me that the data management quickly escalated in an unorganized way. It quickly became hard to keep the data structured in terms of *'view'* and database. It was not my intention to focus on this part but at the same time I understand this is probably a challenge every time building an app and that an ORM or at the very least some implementation of structured data models could be beneficial. While it would be interesting to make some implementation of my own the next time I would instead like to see what tools exist to mitigate this somewhat.
+This little exercise taught me that the data management quickly escalated in an unorganized way. It quickly became hard to keep the data structured in terms of *'view'* and database. It was not my intention to focus on this part but at the same time I understand this is probably a challenge every time building an app and that an ORM or at the very least some existing implementation of structured data models could be beneficial.
+
+Next app I would like to try using one of the modern front-end frameworks (react maybe) to see if data handling becomes more structured and flexible in terms of logic compared to when using the older server-side template setup. I would also like to learn if it actually saves time just using an older styled template setup (for smaller apps) like this compared to using a modern front-end (assuming it's quicker when you have learned that approach).
+
 
 
 ### forms

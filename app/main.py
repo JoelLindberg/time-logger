@@ -1,9 +1,7 @@
 import os
 import sqlite3
 from datetime import datetime, date
-from datetime import timedelta
 from typing import Annotated
-import re
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Form
@@ -12,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 import create_db
+import models
+
 
 load_dotenv()  # take dev environment variables
 app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None) # disable auto docs
@@ -22,347 +22,46 @@ con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 create_db.create_db()
 
 
-def validate_log_time(log_time: str) -> str:
-    '''Validates input and returns a date in the format 14:00.
-    
-    :param log_time: Accepts format "14:00".
-    '''
-    p = "^([0-1][0-9]|2[0-4]):[0-5][0-9]?"
-
-    if len(log_time) == 0:
-        raise "Something went wrong. No time input received."
-
-    if re.fullmatch(p, log_time) != None:
-        return log_time
-    else:
-        return ""
-
-
-
-def calc_in_out(events: list) -> int | None:
-    # calculate/create diffs (timedeltas) between in and out log events
-    dates = []
-    d_timedelta = []
-    previous_event = ""
-    idx = 0
-    incorrect_order = False
-    for i in events:
-        dates.append(datetime.fromisoformat(f'{str(i["date"])}T{i["log_time"]}'))
-
-        if i["event"] == "out" and previous_event == "in":
-            d_timedelta.append(dates[idx] - dates[idx - 1])
-            previous_event = "out"
-        elif i["event"] == "in" and previous_event == "in":
-            print("Incorrect time log event order logged. 'in' is followed by 'in'.")
-            incorrect_order = True
-            #raise ValueError("Incorrect time log event order logged. 'in' is followed by 'in'.")
-        elif i["event"] == "out" and previous_event == "out":
-            print("Incorrect time log event order logged. 'out' is followed by 'out'.")
-            incorrect_order = True
-            #raise ValueError("Incorrect time log event order logged. 'out' is followed by 'out'.")
-        elif i["event"] == "in":
-            previous_event = "in"
-        idx += 1
-
-    # sum the diffs
-    d_sum = sum_timedeltas(d_timedelta)
-
-    # calculate net minutes
-    # update daily with minutes for the current day
-    net_minutes = d_sum.seconds / 60 # add this value to the DB DAILY
-
-    if incorrect_order == True:
-        return None
-    else:
-        return net_minutes
-
-def calc_otin_otout(events: list) -> int | None:
-    # calculate/create diffs (timedeltas) between in and out log events
-    dates = []
-    d_timedelta = []
-    previous_event = ""
-    idx = 0
-    incorrect_order = False
-    for i in events:
-        dates.append(datetime.fromisoformat(f'{str(i["date"])}T{i["log_time"]}'))
-
-        if i["event"] == "ot-out" and previous_event == "ot-in":
-            d_timedelta.append(dates[idx] - dates[idx - 1])
-            previous_event = "ot-out"
-        elif i["event"] == "ot-in" and previous_event == "ot-in":
-            print("Incorrect time log event order logged. 'ot-in' is followed by 'ot-in'.")
-            incorrect_order = True
-            #raise ValueError("Incorrect time log event order logged. 'ot-in' is followed by 'ot-in'.")
-        elif i["event"] == "ot-out" and previous_event == "ot-out":
-            print("Incorrect time log event order logged. 'ot-out' is followed by 'ot-out'.")
-            incorrect_order = True
-            #raise ValueError("Incorrect time log event order logged. 'ot-out' is followed by 'ot-out'.")
-        elif i["event"] == "ot-in":
-            previous_event = "ot-in"
-        idx += 1
-
-    # sum the diffs
-    d_sum = sum_timedeltas(d_timedelta)
-
-    # calculate net minutes
-    # update daily with minutes for the current day
-    net_ot_minutes = d_sum.seconds / 60 # add this value to the DB DAILY
-
-    if incorrect_order == True:
-        return None
-    else:
-        return net_ot_minutes
-
-
-def sum_timedeltas(d_timedelta: timedelta) -> timedelta:
-    """Addition of timedelta results. Return a single object with the time diffs combined."""
-    d_sum = timedelta(seconds=0)
-    for d in d_timedelta:
-        d_sum = d + d_sum
-
-    return d_sum
-
-
-def delete_daily(selected_date: str):
-    """Deletes from DAILY table based on selected_date from the main page."""
-    cur = con.cursor()
-    cur.execute(f"DELETE FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
-    con.commit()
-
-
-def update_daily(selected_date: str):
-    # get the current date logged times from events
-    current_events = ("SELECT log_id,"
-        "logged_date,"
-        "event_type,"
-        "log_time,"
-        f"comment FROM {os.environ.get("TABLE_EVENTS")} "
-        f"WHERE logged_date='{selected_date}' "
-        "ORDER BY "
-        "logged_date DESC, log_time ASC;")
-    cur = con.cursor()
-    cur.execute(current_events)
-    r = cur.fetchall()
-
-    events = []
-    for i in r:
-        row = {}
-        row["log_id"] = i[0]
-        row["date"] = i[1]
-        row["event"] = i[2]
-        row["log_time"] = i[3]
-        row["comment"] = i[4]
-        events.append(row)
-    
-    net_minutes = calc_in_out(events)
-    net_ot_minutes = calc_otin_otout(events)
-
-    # Update DAILY if the event order is correct and complete
-    if net_minutes != None:
-        update_query = (f"UPDATE {os.environ.get("TABLE_DAILY")} "
-            f"SET minutes='{net_minutes}' "
-            f"WHERE date='{selected_date}';")
-        cur = con.cursor()
-        cur.execute(update_query)
-        con.commit()
-
-        # these calcs can be used by a method presenting the daily value to the page
-        minutes = (net_minutes % 60)
-        hours = (net_minutes - minutes) / 60
-    else:
-        print("updating nothing in DAILY")
-    
-    if net_ot_minutes != None:
-        update_query = (f"UPDATE {os.environ.get("TABLE_DAILY")} "
-            f"SET ot_minutes='{net_ot_minutes}' "
-            f"WHERE date='{selected_date}';")
-        cur = con.cursor()
-        cur.execute(update_query)
-        con.commit()
-    else:
-        print("updating nothing in DAILY for OT minutes")
-
-    
-def worked_hours(worked_minutes: int) -> str:
-    """Present daily values on the page"""
-    minutes = int(worked_minutes % 60)
-    hours = int((worked_minutes - minutes) / 60)
-
-    return f"{hours}h {minutes}m"
-    
-
-def daily_balance(worked_minutes: int) -> str:
-    """Present balance on the page"""
-    # 8h work expected = 480 minutes
-    daily_balance = (worked_minutes - 480)
-
-    if daily_balance < 0:
-        minutes = daily_balance % 60
-        hours = int((daily_balance - minutes) / 60)
-        -abs(minutes) # convert the number to negative
-        -abs(hours) # convert the number to negative
-        return f"{hours}h {minutes}m"
-    else:
-        minutes = daily_balance % 60
-        hours = int((daily_balance - minutes) / 60)
-        return f"{hours}h {minutes}m"
-
-def monthly_balance(worked_minutes: int, worked_days: int) -> str:
-    # worked hours
-    #worked_hours = (worked_minutes / 60)
-    expected_minutes = worked_days * 8 * 60
-    monthly_balance = worked_minutes - expected_minutes
-
-    if monthly_balance < 0:
-        minutes = monthly_balance % 60
-        hours = int((monthly_balance - minutes) / 60)
-        minutes = -abs(minutes)
-        hours = -abs(hours)
-
-        return f"{hours}h {minutes}m"
-    else:
-        minutes = monthly_balance % 60
-        hours = int((monthly_balance - minutes) / 60)
-
-        return f"{hours}h {minutes}m"
-
-
-def update_monthly(selected_date: str):
-    year_month = selected_date[:-3]
-    month = selected_date[5:-3]
-    year = selected_date[:-6]
-
-    # get the sum (minutes) for the month
-    daily = ("SELECT SUM(minutes) "
-        f"FROM {os.environ.get("TABLE_DAILY")} "
-        f"WHERE minutes>0 AND date like '{year_month}%'"
-        ";")
-    cur = con.cursor()
-    cur.execute(daily)
-    minutes = cur.fetchall()[0][0]
-
-    # get the sum (minutes) for the month
-    daily = ("SELECT SUM(ot_minutes) "
-        f"FROM {os.environ.get("TABLE_DAILY")} "
-        f"WHERE ot_minutes>0 AND date like '{year_month}%'"
-        ";")
-    cur = con.cursor()
-    cur.execute(daily)
-    ot_minutes = cur.fetchall()[0][0]
-
-    if minutes == None:
-        minutes = 0
-
-    if ot_minutes == None:
-        ot_minutes = 0
-
-    daily = ("SELECT COUNT(minutes) "
-        f"FROM {os.environ.get("TABLE_DAILY")} "
-        f"WHERE minutes>0 AND date like '{year_month}%'"
-        ";")
-    cur = con.cursor()
-    cur.execute(daily)
-    r = cur.fetchall()
-    worked_days = r[0][0]
-
-    insert_monthly = ("INSERT OR REPLACE INTO "
-        f"{os.environ.get("TABLE_MONTHLY")} ("
-        "year,"
-        "month,"
-        "minutes,"
-        "ot_minutes,"
-        "worked_days) VALUES ("
-        f"'{year}',"
-        f"'{month}',"
-        f"'{minutes}',"
-        f"'{ot_minutes}',"
-        f"{worked_days});")
-    cur = con.cursor()
-    cur.execute(insert_monthly)
-    con.commit()
-
-
-
 @app.get("/")
 async def root(request: Request, selected_date: str = ""):
     if selected_date == "":
        selected_date = datetime.today().strftime('%Y-%m-%d')
 
-    show_data = ("SELECT log_id,"
-        "logged_date,"
-        "event_type,"
-        "log_time,"
-        f"comment FROM {os.environ.get("TABLE_EVENTS")} ORDER BY "
-        "logged_date DESC, log_time ASC;")
+    get_events = """SELECT event_id,
+        date,
+        event,
+        time,
+        comment FROM events ORDER BY date DESC, time ASC;"""
     cur = con.cursor()
-    cur.execute(show_data)
+    cur.execute(get_events)
     r = cur.fetchall()
-
     events = []
-    for l in r:
-        events.append(
-            {
-                "id": l[0],
-                "date": l[1],
-                "event": l[2],
-                "time": l[3],
-                "comment": l[4]
-            }
-        )
-
-
-    daily = ("SELECT daily_id,"
-        "date,"
-        "minutes,"
-        "ot_minutes "
-        f"FROM {os.environ.get("TABLE_DAILY")} "
-        "ORDER BY date DESC;")
+    for row in r:
+        events.append(models.Event.from_db_row(row))
+    
+    daily = ("""SELECT daily_id,
+        date,
+        minutes,
+        ot_minutes FROM daily ORDER BY date DESC;""")
     cur = con.cursor()
     cur.execute(daily)
     r = cur.fetchall()
-
     daily = []
-    for l in r:
-        daily.append(
-            {
-                "id": l[0],
-                "date": l[1],
-                "minutes": l[2],
-                "ot_minutes": l[3],
-                "worked_hours": worked_hours(l[2]),
-                "worked_ot_hours": worked_hours(l[3]),
-                "daily_balance": daily_balance(l[2])
-            }
-        )
+    for row in r:
+        daily.append(models.Daily.from_db_row(row))
     
-    get_monthly = ("SELECT monthly_id,"
-        "year,"
-        "month,"
-        "minutes,"
-        "ot_minutes,"
-        "worked_days "
-        f"FROM {os.environ.get("TABLE_MONTHLY")} "
-        f"WHERE month='{selected_date[5:-3]}'"
-        "ORDER BY year DESC, month ASC;")
+    get_monthly = ("""SELECT monthly_id,
+        year,
+        month,
+        minutes,
+        ot_minutes,
+        worked_days FROM monthly WHERE month=? 
+        ORDER BY year DESC, month ASC;""")
     cur = con.cursor()
-    cur.execute(get_monthly)
+    cur.execute(get_monthly, (selected_date[5:-3],))
     r = cur.fetchall()
-
-    if len(r) != 0:
-        monthly = {
-                "id": r[0][0],
-                "year": r[0][1],
-                "month": r[0][2],
-                "minutes": r[0][3],
-                "ot_minutes": r[0][4],
-                "worked_days": r[0][5],
-                "worked_hours": worked_hours(r[0][3]),
-                "worked_ot_hours": worked_hours(r[0][4]),
-                "monthly_balance": monthly_balance(r[0][3], r[0][5]),
-                "month_full": date(1999, int(selected_date[5:-3]), 1).strftime("%B")
-            }
-    else:
-        monthly = {}
+    if r:
+        monthly = models.Monthly.from_db_row(r[0])
 
     return templates.TemplateResponse(
         "index.html",
@@ -371,107 +70,124 @@ async def root(request: Request, selected_date: str = ""):
             "date": selected_date,
             "events": events,
             "daily":  daily,
-            "monthly": monthly
+            "monthly": monthly,
+            "month_full": date(1999, int(selected_date[5:-3]), 1).strftime("%B")
         })
 
 
 @app.post("/add/")
 async def add(selected_date: Annotated[str, Form()], event: Annotated[str, Form()], time: Annotated[str, Form()], comment: Annotated[str, Form()]):
+    event = models.Event(event_id = None,
+                         date = selected_date,
+                         event = event,
+                         time = time,
+                         comment = comment)
+    add_event = ("""INSERT INTO events (
+        date,
+        event,
+        time,
+        comment) VALUES (?,?,?,?);""")
     cur = con.cursor()
-    insert_query = (f"INSERT INTO {os.environ.get("TABLE_EVENTS")} ("
-        "logged_date,"
-        "event_type,"
-        "log_time,"
-        "comment) VALUES ("
-        f"'{selected_date}',"
-        f"'{event}',"
-        f"'{validate_log_time(time)}',"
-        f"\"{comment}\");")
-    cur.execute(insert_query)
+    cur.execute(add_event, (event.date, event.event, event.time, event.comment))
     con.commit()
 
     # Also create an entry in the daily table for the daily net to be stored
     cur = con.cursor()
-    select_daily = ("SELECT date "
-        f"FROM {os.environ.get("TABLE_DAILY")} WHERE date='{selected_date}';")
-    cur.execute(select_daily)
+    select_daily = ("SELECT date FROM daily WHERE date=?;")
+    cur.execute(select_daily, (selected_date,))
     r = cur.fetchall()
 
     if len(r) == 0:
+        insert_daily = ("""INSERT INTO daily (
+            date,
+            minutes) VALUES (?, ?);""")
         cur = con.cursor()
-        insert_daily = (f"INSERT INTO {os.environ.get("TABLE_DAILY")} ("
-            "date,"
-            "minutes) VALUES ("
-            f"'{selected_date}',"
-            f"0);")
-        cur.execute(insert_daily)
+        cur.execute(insert_daily, (selected_date, 0))
         con.commit()
 
-    update_daily(selected_date)
-    update_monthly(selected_date)
+    models.Daily.update_daily(selected_date)
+    models.Monthly.update_monthly(selected_date)
 
-    return RedirectResponse(f"/?date={selected_date}", status_code=303)
+    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
 
 
 @app.get("/delete/")
-async def delete(id: int, selected_date: str):
+async def delete(event_id: int, selected_date: str, event: str):
     cur = con.cursor()
-    cur.execute(f"DELETE FROM {os.environ.get("TABLE_EVENTS")} WHERE log_id = '{id}';")
+    cur.execute("DELETE FROM events WHERE event_id=?;", (event_id,))
     con.commit()
 
     # if all events for a day are deleted - update daily and monthly then cleanup daily
-    select_events = ("SELECT logged_date "
-        f"FROM {os.environ.get("TABLE_EVENTS")} WHERE logged_date='{selected_date}';")
+    select_events = ("SELECT * FROM events WHERE date=?;")
     cur = con.cursor()
-    cur.execute(select_events)
+    cur.execute(select_events, (selected_date,))
     r = cur.fetchall()
+    events = []
+    for row in r:
+        events.append(models.Event.from_db_row(row))
+    
+    if event == "in" or event == "out":
+        event_type = "normal"
+    else:
+        event_type = "ot"
 
-    if len(r) == 0:
-        update_daily(selected_date)
-        update_monthly(selected_date)
-        delete_daily(selected_date)
+    # Don't update Daily and Monthly tables unless there are no more events of the same type
+    update = True
+    for e in events:
+        if (e.event == "in" or e.event == "out") and event_type == "normal":
+            update = False
+            break
+        elif (e.event == "ot-in" or e.event == "ot-out") and event_type == "ot":
+            update = False
+            break
 
-    return RedirectResponse(f"/?date={selected_date}", status_code=303)
+    if update == True:
+        models.Daily.update_daily(selected_date)
+        models.Monthly.update_monthly(selected_date)
+
+    if len(events) == 0:
+        models.Daily.delete_daily(selected_date)
+
+    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
 
 
 @app.post("/update/")
 async def update(selected_date: Annotated[str, Form()], event: Annotated[list, Form()], time: Annotated[list, Form()], comment: Annotated[list, Form()]):
     # Get the current date's events from the DB
-    show_data = ("SELECT log_id,"
-        "logged_date,"
-        "event_type,"
-        "log_time,"
-        f"comment FROM {os.environ.get("TABLE_EVENTS")} "
-        f"WHERE logged_date='{selected_date}' "
-        "ORDER BY "
-        "logged_date DESC, log_time ASC;")
+    get_events = ("SELECT event_id,"
+        "date,"
+        "event,"
+        "time,"
+        "comment FROM events WHERE date=? ORDER BY date DESC, time ASC;")
     cur = con.cursor()
-    cur.execute(show_data)
+    cur.execute(get_events, (selected_date,))
     r = cur.fetchall()
-
-    # Compare the dat from the DB with the POST data to only update where needed
+    events = []
+    for row in r:
+        events.append(models.Event.from_db_row(row))
+    # Compare the data from the DB with the POST data to only update when needed
     i = 0
-    for db_event in r:
+    for e in events:
         changed = False
-        if event[i] != db_event[2]:
+        if event[i] != e.event:
             changed = True
-        elif time[i] != db_event[3]:
+        elif time[i] != e.time:
             changed = True
-        elif comment[i] != db_event[4]:
+        elif comment[i] != e.comment:
             changed = True
 
         if changed == True:
-            update_query = (f"UPDATE {os.environ.get("TABLE_EVENTS")} "
-                f"SET event_type='{event[i]}', "
-                f"log_time='{time[i]}', "
-                f"comment='{comment[i]}' "
-                f"WHERE log_id='{db_event[0]}';")
+            update_query = ("""UPDATE events 
+                SET event=?, 
+                time=?, 
+                comment=? 
+                WHERE event_id=?;""")
             cur = con.cursor()
-            cur.execute(update_query)
+            cur.execute(update_query, (event[i], time[i], comment[i], e.event_id))
             con.commit()
         i += 1
 
-    update_daily(selected_date)
-    update_monthly(selected_date)
+    models.Daily.update_daily(selected_date)
+    models.Monthly.update_monthly(selected_date)
 
     return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)

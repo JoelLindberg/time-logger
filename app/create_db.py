@@ -37,16 +37,16 @@ def create_db():
             TABLE_EVENTS_EXISTS = True
 
     if TABLE_EVENTS_EXISTS == False:
-        tables = f"""CREATE TABLE {os.environ.get('TABLE_EVENTS')} (
-            log_id INTEGER PRIMARY KEY,
-            logged_date date,
-            event_type varchar(3),
-            log_time varchar(5),
+        tables = f"""CREATE TABLE events (
+            event_id INTEGER PRIMARY KEY,
+            date date,
+            event varchar(3),
+            time varchar(5),
             comment varchar(30),
-            UNIQUE(logged_date, log_time)
+            UNIQUE(date, time)
             );"""
         cur.execute(tables)
-        text = Text(f"Created table {os.environ.get('TABLE_EVENTS')}")
+        text = Text(f"Created table events")
         text.stylize("green")
         console.print(text)
 
@@ -61,14 +61,14 @@ def create_db():
             TABLE_DAILY_EXISTS = True
 
     if TABLE_DAILY_EXISTS == False:
-        tables = f"""CREATE TABLE {os.environ.get('TABLE_DAILY')} (
+        tables = f"""CREATE TABLE daily (
             daily_id INTEGER PRIMARY KEY,
             date date UNIQUE,
             minutes int,
             ot_minutes int
             );"""
         cur.execute(tables)
-        text = Text(f"Created table {os.environ.get('TABLE_DAILY')}")
+        text = Text(f"Created table daily")
         text.stylize("green")
         console.print(text)
 
@@ -83,7 +83,7 @@ def create_db():
             TABLE_MONTHLY_EXISTS = True
 
     if TABLE_MONTHLY_EXISTS == False:
-        tables = f"""CREATE TABLE {os.environ.get('TABLE_MONTHLY')} (
+        tables = f"""CREATE TABLE monthly (
             monthly_id INTEGER PRIMARY KEY,
             year varchar(4),
             month varchar(2),
@@ -93,6 +93,6 @@ def create_db():
             UNIQUE(year, month)
             );"""
         cur.execute(tables)
-        text = Text(f"Created table {os.environ.get('TABLE_MONTHLY')}")
+        text = Text(f"Created table monthly")
         text.stylize("green")
         console.print(text)

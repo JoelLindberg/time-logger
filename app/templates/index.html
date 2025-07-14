@@ -15,7 +15,7 @@
 
 <p>Use <i>In</i> and <i>Out</i> for expected 8h work days. Use <i>OT In</i> and <i>OT Out</i> for any other time (overtime).</p>
 
-<h4>{{ monthly.month_full }} {{ monthly.year }}</h4>
+<h4>{{ month_full }} {{ monthly.year }}</h4>
 <ul>
     <li>Worked hours this month: <b>{{ monthly.worked_hours }}</b></li>
     <li>Worked OT hours this month: <b>{{ monthly.worked_ot_hours }}</b></li>
@@ -30,7 +30,7 @@
 
 <form action="/">
     <label class="label-1" for="date">Select date</label>
-    <input class="form-date" type="text" id="date" name="date" value="{{ date }}">
+    <input class="form-date" type="text" id="selected_date" name="selected_date" value="{{ date }}">
     <button class="btn" type="submit">Change</button>
 </form>
 
@@ -93,7 +93,7 @@
             <input type="text" id="comment" name="comment" value="{{ item.comment }}">
             
 
-            <a href="/delete/?id={{ item.id }}&selected_date={{ date }}" class="delete-button" id="delete">❌</a>
+            <a href="/delete/?event_id={{ item.event_id }}&selected_date={{ date }}&event={{ item.event }}" class="delete-button" id="delete">❌</a>
             
         {% endif %}
         </div>

@@ -43,9 +43,6 @@ COPY ./app /app
 
 # time-logger app variables
 ENV DB_FILE="../db/time_logger.db"
-ENV TABLE_EVENTS="events"
-ENV TABLE_DAILY="daily"
-ENV TABLE_MONTHLY="monthly"
 
 # Expose the port that the FastAPI application will listen on.
 # This informs Docker that the container listens on the specified network ports at runtime.

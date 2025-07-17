@@ -30,7 +30,7 @@
 
 <form action="/">
     <label class="label-1" for="date">Select date</label>
-    <input class="form-date" type="text" id="selected_date" name="selected_date" value="{{ date }}">
+    <input type="date" id="selected_date" name="selected_date" value="{{ date }}">
     <button class="btn" type="submit">Change</button>
 </form>
 
@@ -45,7 +45,7 @@
             <option value="ot-out">OT Out</option>
         </select>
         <label for="time">Time</label>
-        <input type="text" id="time" name="time">
+        <input type="text" id="time" name="time" placeholder="06:30">
         <label for="comment">Comment</label>
         <input type="text" id="comment" name="comment">
      <input class="btn" type="submit" value="Add">

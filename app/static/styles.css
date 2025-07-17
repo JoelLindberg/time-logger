@@ -64,10 +64,6 @@ form {
     margin-bottom: var(--spacing-unit);
 }
 
-.form-date {
-  width: 120px;
-}
-
 .form-group {
     margin-bottom: var(--spacing-unit);
 }
@@ -95,6 +91,7 @@ label {
 }
 
 input[type="text"],
+input[type="date"],
 textarea,
 select {
     padding: 0.75rem 1rem;

@@ -13,6 +13,12 @@ To keep track of your working hours
 - [x] Protect against SQL injection
     - sqlite3 lib parameters used
 
+Extra things added post:
+- [x] Add date picker
+- [ ] Add 24h format time selector and/or validate input (using js before submitting)
+- [ ] Add page with overview of previous months?
+- [ ] Make the important time calc logic (unit) testable
+
 
 ## Deployment
 
@@ -92,6 +98,9 @@ Content-Length: 27
 
 field1=value1&field2=value2
 ~~~
+
+`<input type="date">` was previously unknown to me. It seems to be a very convenient (and well supported) way instead of trying to conjure something using javascript: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/date
+
 
 ### fastapi
 

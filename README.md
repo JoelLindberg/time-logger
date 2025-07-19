@@ -15,6 +15,7 @@ To keep track of your working hours
 
 Extra things added post:
 - [x] Add date picker
+- [x] Makefile for convenience to locally build and run with Docker
 - [ ] Add 24h format time selector and/or validate input (using js before submitting)
 - [ ] Add page with overview of previous months?
 - [ ] Make the important time calc logic (unit) testable
@@ -22,10 +23,21 @@ Extra things added post:
 
 ## Deployment
 
+Containerize it and run locally.
+
+### Using make (recommended)
+
+1. `sudo make`
+
+You need to run make as sudo unless you are running docker engine in [rootless mode](https://docs.docker.com/engine/security/rootless/).
+
+
+### Without make
+
 1. `sudo docker build -t time-logger .`
 2. `mkdir db`
 3. Run one of the following:
-    * `CURRENT_UID=$(id -u):$(id -g) && sudo -E docker compose -f compose.yml up`
+    * `export CURRENT_UID=$(id -u):$(id -g) && sudo -E docker compose -f compose.yml up`
     * `sudo docker run --user $(id -u):$(id -g) --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
 
 The user it set to the current user in order to allow it smoothly to be run locally. Change this to something else if you want to run it elsewhere, and remember to make sure to set the ownership on the db/ folder accordingly.

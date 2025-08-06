@@ -51,7 +51,7 @@ async def root(request: Request, selected_date: str = ""):
     r = cur.fetchall()
     daily = []
     for row in r:
-        daily.append(models.Daily.from_db_row(row))   
+        daily.append(models.Daily.from_db_row(row))
 
     monthly = models.Monthly.get_monthly(selected_date)
 
@@ -85,11 +85,17 @@ async def add(selected_date: Annotated[str, Form()],
               event: Annotated[str, Form()],
               time: Annotated[str, Form()],
               comment: Annotated[str, Form()]):
-    event_to_add = models.Event(event_id=None,
-                                date=selected_date,
-                                event=event,
-                                time=time,
-                                comment=comment)
+
+    try:
+        event_to_add = models.Event(event_id=None,
+                                    date=selected_date,
+                                    event=event,
+                                    time=time,
+                                    comment=comment)
+    except ValueError as err:
+        print(f"Error: {err}")
+        return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+
     add_event = ("""INSERT INTO events (
         date,
         event,
@@ -181,11 +187,11 @@ async def update(selected_date: Annotated[str, Form()],
     i = 0
     for e in events:
         try:
-            upd_e = models.Event(event_id = None,
-                                 date = selected_date[i],
-                                 event = event[i],
-                                 time = time[i],
-                                 comment = comment[i])
+            upd_e = models.Event(event_id=None,
+                                 date=selected_date[i],
+                                 event=event[i],
+                                 time=time[i],
+                                 comment=comment[i])
         except ValueError as err:
             print(f"Error: {err}")
             return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)

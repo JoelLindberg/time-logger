@@ -40,8 +40,12 @@ body {
     padding: calc(2 * var(--spacing-unit));
     border-radius: var(--border-radius-medium);
     box-shadow: 0 4px 15px var(--shadow-light);
-    max-width: 600px;
+    max-width: 1000px;
     margin-top: 20px;
+}
+
+.events {
+    margin-top: 40px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -54,6 +58,11 @@ p {
     margin-bottom: var(--spacing-unit);
 }
 
+hr {
+    border: 0px;
+    border-bottom: 2px dashed var(--border-color);
+    margin-bottom: 40px;
+}
 
 /* --- Forms --- */
 form {
@@ -66,6 +75,10 @@ form {
 
 .form-group {
     margin-bottom: var(--spacing-unit);
+}
+
+fieldset {
+    border-radius: var(--border-radius-medium);
 }
 
 legend {
@@ -117,6 +130,11 @@ textarea {
     min-height: 100px;
 }
 
+.error-message {
+    color: red;
+    display: flex;
+    flex-basis: 100%;
+}
 
 /* --- Buttons --- */
 .btn {

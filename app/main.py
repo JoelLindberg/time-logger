@@ -31,9 +31,12 @@ async def root(request: Request, selected_date: str = ""):
         date,
         event,
         time,
-        comment FROM events ORDER BY date DESC, time ASC;"""
+        comment
+        FROM events
+        WHERE date = ?
+        ORDER BY date DESC, time ASC;"""
     cur = con.cursor()
-    cur.execute(get_events)
+    cur.execute(get_events, (selected_date,))
     r = cur.fetchall()
     events = []
     for row in r:
@@ -48,7 +51,7 @@ async def root(request: Request, selected_date: str = ""):
     r = cur.fetchall()
     daily = []
     for row in r:
-        daily.append(models.Daily.from_db_row(row))
+        daily.append(models.Daily.from_db_row(row))   
 
     monthly = models.Monthly.get_monthly(selected_date)
 
@@ -173,15 +176,26 @@ async def update(selected_date: Annotated[str, Form()],
     events = []
     for row in r:
         events.append(models.Event.from_db_row(row))
+
     # Compare the data from the DB with the POST data to only update when needed
     i = 0
     for e in events:
+        try:
+            upd_e = models.Event(event_id = None,
+                                 date = selected_date[i],
+                                 event = event[i],
+                                 time = time[i],
+                                 comment = comment[i])
+        except ValueError as err:
+            print(f"Error: {err}")
+            return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+
         changed = False
-        if event[i] != e.event:
+        if upd_e.event != e.event:
             changed = True
-        elif time[i] != e.time:
+        elif upd_e.time != e.time:
             changed = True
-        elif comment[i] != e.comment:
+        elif upd_e.comment != e.comment:
             changed = True
 
         if changed == True:
@@ -191,7 +205,7 @@ async def update(selected_date: Annotated[str, Form()],
                 comment=?
                 WHERE event_id=?;""")
             cur = con.cursor()
-            cur.execute(update_query, (event[i], time[i], comment[i], e.event_id))
+            cur.execute(update_query, (upd_e.event, upd_e.time, upd_e.comment, e.event_id))
             con.commit()
         i += 1
 

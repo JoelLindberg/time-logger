@@ -20,7 +20,7 @@ class Event:
                  event_id: int | None,
                  date: str,
                  event: str,
-                 time: str,
+                 time: str | None,
                  comment: str):
         self.event_id = event_id
         self.date = date
@@ -33,15 +33,15 @@ class Event:
 
         :param log_time: Accepts format "14:00".
         '''
-        p = "^([0-1][0-9]|2[0-4]):[0-5][0-9]?"
+        p = "^([0-1][0-9]|2[0-4]):[0-5][0-9]$"
 
         if len(log_time) == 0:
-            raise AttributeError("Invalid or no time input received.")
+            raise ValueError("Invalid or no time input received.")
 
         if re.fullmatch(p, log_time) != None:
             return log_time
         else:
-            raise AttributeError("Invalid time input received.")
+            raise ValueError("Invalid time input received.")
 
     def to_dict(self) -> dict:
         """

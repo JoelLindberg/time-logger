@@ -1,5 +1,8 @@
 # time-logger
 
+![Build Status](https://github.com/JoelLindberg/time-logger/actions/workflows/main.yml/badge.svg)
+
+
 To keep track of your working hours
 
 ![alt text](logging_time.gif "Logging time")

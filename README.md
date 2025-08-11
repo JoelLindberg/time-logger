@@ -13,9 +13,11 @@ To keep track of your working hours
 - [x] Protect against SQL injection
     - sqlite3 lib parameters used
 
-Extra things added post:
+Extra things added after the above main functionality was implemented:
 - [x] Add date picker
 - [x] Makefile for convenience to locally build and run with Docker
+- [x] Authentication
+- [ ] Use HTTPException when capturing input error and redirecting
 - [ ] Add 24h format time selector and/or validate input (using js before submitting)
 - [ ] Add page with overview of previous months?
 - [ ] Make the important time calc logic (unit) testable
@@ -47,9 +49,18 @@ The user it set to the current user in order to allow it smoothly to be run loca
 
 Using python-dotenv for setting env variables while developing: https://pypi.org/project/python-dotenv/
 
+Pre-requisite: Create an account on auth0 (free tier available) and setup an app with a login to use.
+
 1. Create `.env` and populate it with:
     ~~~shell
+    # time-logger app
     DB_FILE="../db/time_logger.db"
+
+    # auth0
+    CLIENT_ID=
+    CLIENT_SECRET=
+    DOMAIN=
+    SESSION_SECRET=
     ~~~
 2. `source venv/bin/activate` (assumes you are in a linux environment)
 3. `cd app/`
@@ -123,3 +134,8 @@ We must use status code 303 instead of 307 after a POST when redirecting. Otherw
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/303
 
     "This response code is often sent back as a result of PUT or POST methods so the client may retrieve a confirmation, or view a representation of a real-world object"
+
+
+### auth0
+
+Followed and implemented parts of this excellent guide: https://developer.auth0.com/resources/guides/web-app/fastapi/basic-authentication

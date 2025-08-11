@@ -44,6 +44,13 @@ body {
     margin-top: 20px;
 }
 
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    flex-basis: 100%;
+}
+
 .events {
     margin-top: 40px;
 }
@@ -96,6 +103,10 @@ label {
 
 .label-1 {
   width: 90px;
+}
+
+.header-button {
+    margin-left: auto;
 }
 
 .delete-button {

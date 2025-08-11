@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>time-logger</title>
-    <link rel="stylesheet" type="text/css" href="/static/styles.css?v=2">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css?v=4">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 </head>
@@ -10,7 +10,17 @@
 <body>
 <div id="container" class="container">
 
-<h1>Time Logger</h1>
+<div class="header">
+    <h1>Time Logger</h1>
+
+    <div class="header-button">
+    {% if request.session %}
+    <button onclick="document.location='logout/'" class="btn">Log off</button>
+    {% endif %}
+    </div>
+</div>
+
+
 <h3>Log time you have worked</h3>
 
 <p>Use <i>In</i> and <i>Out</i> for expected 8h work days. Use <i>OT In</i> and <i>OT Out</i> for any other time (overtime).</p>

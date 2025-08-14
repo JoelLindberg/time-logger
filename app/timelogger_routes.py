@@ -4,10 +4,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import RedirectResponse
 
-import models
-from config import templates
-from config import db_con as con
-from auth_dependencies import protected_endpoint
+from app import models
+from app.config import templates
+from app.config import db_con as con
+from app.auth_dependencies import protected_endpoint
 
 
 timelogger_router = APIRouter()

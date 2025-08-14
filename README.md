@@ -69,11 +69,16 @@ Pre-requisite: Create an account on auth0 (free tier available) and setup an app
 3. `cd app/`
 5. Run fastapi app: `fastapi dev main.py`
 
+*Intentionally excluded a few things in flake8 to stay closer to the readability of other similar c-like languages.*
+
+
+### Tests
+
 Verify newly added code passes flake8 tests:
 1. `source venv/bin/activate`
 2. `flake8 app/`
+3. `python -m pytest tests`
 
-*Intentionally excluded a few things in flake8 to stay closer to the readability of other similar c-like languages.*
 
 
 ## Dependencies

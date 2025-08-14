@@ -23,3 +23,6 @@ jobs:
       
       - name: Run style checks
         run: python3 -m flake8 app/
+      
+      - name: Run pytest
+        run: python3 -m pytest tests/

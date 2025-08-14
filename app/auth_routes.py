@@ -4,7 +4,7 @@ from urllib.parse import quote_plus, urlencode
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 
-from auth_config import oauth
+from app.auth_config import oauth
 
 
 auth_router = APIRouter()

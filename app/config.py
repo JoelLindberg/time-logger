@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 
-import create_db
+from app import create_db
 
 
 load_dotenv()  # take dev environment variables

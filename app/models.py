@@ -7,7 +7,7 @@ import re
 con = sqlite3.connect(f"{os.environ.get('DB_FILE')}")
 
 
-def calc_worked_hours(worked_minutes: int) -> str:
+def get_worked_hours(worked_minutes: int) -> str:
     """Present daily values on the page"""
     minutes = int(worked_minutes % 60)
     hours = int((worked_minutes - minutes) / 60)
@@ -91,9 +91,9 @@ class Daily:
         self.date = date
         self.minutes = minutes
         self.ot_minutes = ot_minutes
-        self.worked_hours = calc_worked_hours(self.minutes)  # not from DB, computed
-        self.worked_ot_hours = calc_worked_hours(self.ot_minutes)  # not from DB, computed
-        self.daily_balance = self.daily_balance(self.minutes)  # not from DB, computed
+        self.worked_hours = get_worked_hours(self.minutes)  # not from DB, computed
+        self.worked_ot_hours = get_worked_hours(self.ot_minutes)  # not from DB, computed
+        self.daily_balance = self.get_daily_balance(self.minutes)  # not from DB, computed
 
     def to_dict(self) -> dict:
         return {
@@ -106,20 +106,23 @@ class Daily:
             "daily_balance": self.daily_balance
         }
 
-    def daily_balance(self, worked_minutes: int) -> str:
+    def get_daily_balance(self, worked_minutes: int) -> str:
         """Present balance on the page"""
         # 8h work expected = 480 minutes
         daily_balance = (worked_minutes - 480)
 
+        if worked_minutes == 0:
+            return "0h 0m"
+
         if daily_balance < 0:
-            minutes = daily_balance % 60
-            hours = int((daily_balance - minutes) / 60)
-            -abs(minutes)  # convert the number to negative
-            -abs(hours)  # convert the number to negative
-            return f"{hours}h {minutes}m"
+            minutes = abs(daily_balance) % 60
+            hours = int((abs(daily_balance) - minutes) / 60)
+
+            return f"-{hours}h {minutes}m"
         else:
             minutes = daily_balance % 60
             hours = int((daily_balance - minutes) / 60)
+
             return f"{hours}h {minutes}m"
 
     def sum_timedeltas(self, d_timedelta: timedelta) -> timedelta:
@@ -266,9 +269,9 @@ class Monthly:
         self.minutes = minutes
         self.ot_minutes = ot_minutes
         self.worked_days = worked_days
-        self.worked_hours = calc_worked_hours(self.minutes)  # not from DB, computed
-        self.worked_ot_hours = calc_worked_hours(self.ot_minutes)  # not from DB, computed
-        self.monthly_balance = self.monthly_balance(self.minutes, self.worked_days)  # not from DB, computed
+        self.worked_hours = get_worked_hours(self.minutes)  # not from DB, computed
+        self.worked_ot_hours = get_worked_hours(self.ot_minutes)  # not from DB, computed
+        self.monthly_balance = self.get_monthly_balance(self.minutes, self.worked_days)  # not from DB, computed
 
     def to_dict(self) -> dict:
         return {
@@ -283,17 +286,15 @@ class Monthly:
             "monthly_balance": self.monthly_balance
         }
 
-    def monthly_balance(self, worked_minutes: int, worked_days: int) -> str:
+    def get_monthly_balance(self, worked_minutes: int, worked_days: int) -> str:
         expected_minutes = worked_days * 8 * 60
         monthly_balance = worked_minutes - expected_minutes
 
         if monthly_balance < 0:
-            minutes = monthly_balance % 60
+            minutes = abs(monthly_balance) % 60
             hours = int((abs(monthly_balance) - minutes) / 60)
-            minutes = -abs(minutes)
-            hours = -abs(hours)
 
-            return f"{hours}h {minutes}m"
+            return f"-{hours}h {minutes}m"
         else:
             minutes = monthly_balance % 60
             hours = int((monthly_balance - minutes) / 60)

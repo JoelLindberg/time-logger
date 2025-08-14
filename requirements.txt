@@ -4,3 +4,4 @@ python-dotenv
 flake8
 Authlib==1.2.1
 itsdangerous==2.1.2
+pytest

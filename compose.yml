@@ -1,8 +1,13 @@
 services:
   web:
     image: "time-logger"
-#    environment:
-#        DB_FILE: "../db/time_logger.db"
+    environment:
+        #DB_FILE: "db/time_logger.db"
+        # auth0
+        CLIENT_ID: ${CLIENT_ID}
+        CLIENT_SECRET: ${CLIENT_SECRET}
+        DOMAIN: ${DOMAIN}
+        SESSION_SECRET: ${SESSION_SECRET}
     volumes:
       - type: bind
         source: ./db

@@ -28,11 +28,22 @@ Extra things added after the above main functionality was implemented:
 
 ## Deployment
 
-Containerize it and run locally.
+Containerize it and run.
 
 ### Using make (recommended)
 
-1. `sudo make`
+1. It needs to be fed auth0 config as environment variables. The easiest is by using a .env file. Create `.env` and populate it with:
+    ~~~shell
+    # time-logger app
+    DB_FILE="db/time_logger.db"
+
+    # auth0
+    CLIENT_ID=
+    CLIENT_SECRET=
+    DOMAIN=
+    SESSION_SECRET=
+    ~~~
+2. `sudo make`
 
 You need to run make as sudo unless you are running docker engine in [rootless mode](https://docs.docker.com/engine/security/rootless/).
 
@@ -41,9 +52,7 @@ You need to run make as sudo unless you are running docker engine in [rootless m
 
 1. `sudo docker build -t time-logger .`
 2. `mkdir db`
-3. Run one of the following:
-    * `export CURRENT_UID=$(id -u):$(id -g) && sudo -E docker compose -f compose.yml up`
-    * `sudo docker run --user $(id -u):$(id -g) --mount type=bind,src=./db,dst=/db -p 8000:8000 time-logger`
+3. `export CURRENT_UID=$(id -u):$(id -g) && sudo -E docker compose -f compose.yml up`
 
 The user it set to the current user in order to allow it smoothly to be run locally. Change this to something else if you want to run it elsewhere, and remember to make sure to set the ownership on the db/ folder accordingly.
 
@@ -57,7 +66,7 @@ Pre-requisite: Create an account on auth0 (free tier available) and setup an app
 1. Create `.env` and populate it with:
     ~~~shell
     # time-logger app
-    DB_FILE="../db/time_logger.db"
+    DB_FILE="db/time_logger.db"
 
     # auth0
     CLIENT_ID=
@@ -66,8 +75,7 @@ Pre-requisite: Create an account on auth0 (free tier available) and setup an app
     SESSION_SECRET=
     ~~~
 2. `source venv/bin/activate` (assumes you are in a linux environment)
-3. `cd app/`
-5. Run fastapi app: `fastapi dev main.py`
+3. Run fastapi app: `fastapi dev app/main.py`
 
 *Intentionally excluded a few things in flake8 to stay closer to the readability of other similar c-like languages.*
 

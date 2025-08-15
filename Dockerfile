@@ -24,7 +24,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Set the working directory inside the container.
 # All subsequent commands will be executed relative to this directory.
-WORKDIR /app
+# WORKDIR /app
 
 # Copy the requirements file into the container.
 # This step is done separately to leverage Docker's layer caching.
@@ -42,7 +42,7 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY ./app /app
 
 # time-logger app variables
-ENV DB_FILE="../db/time_logger.db"
+ENV DB_FILE="db/time_logger.db"
 
 # Expose the port that the FastAPI application will listen on.
 # This informs Docker that the container listens on the specified network ports at runtime.
@@ -56,4 +56,4 @@ EXPOSE 8000
 # For production, consider using Gunicorn with Uvicorn workers for process management:
 # CMD ["gunicorn", "main:app", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
 # USER 1001:1001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -14,7 +14,7 @@ load_dotenv()  # take dev environment variables
 
 
 def create_templates():
-    templates = Jinja2Templates(directory="templates")
+    templates = Jinja2Templates(directory="app/templates")
     return templates
 
 
@@ -33,7 +33,7 @@ db_con = create_database()
 
 def create_app():
     app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)  # disable auto docs
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/app/static", StaticFiles(directory="app/static"), name="static")
 
     app.add_middleware(
         SessionMiddleware,

@@ -212,6 +212,6 @@ async def update(selected_date: Annotated[str, Form()],
     return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
 
 
-@timelogger_router.get("/favicon.ico", include_in_schema=False, dependencies=[Depends(protected_endpoint)])
+@timelogger_router.get("/favicon.png", include_in_schema=False, dependencies=[Depends(protected_endpoint)])
 async def favicon():
-    return FileResponse("static/favicon.ico")
+    return FileResponse("static/favicon.png")

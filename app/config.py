@@ -33,7 +33,7 @@ db_con = create_database()
 
 def create_app():
     app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)  # disable auto docs
-    app.mount("/app/static", StaticFiles(directory="app/static"), name="static")
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
     app.add_middleware(
         SessionMiddleware,

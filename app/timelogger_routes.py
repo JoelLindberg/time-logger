@@ -2,7 +2,7 @@ from datetime import datetime, date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Form
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 from app import models
 from app.config import templates
@@ -210,3 +210,8 @@ async def update(selected_date: Annotated[str, Form()],
     models.Monthly.update_monthly(selected_date)
 
     return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+
+
+@timelogger_router.get("/favicon.ico", include_in_schema=False, dependencies=[Depends(protected_endpoint)])
+async def favicon():
+    return FileResponse("static/favicon.ico")

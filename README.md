@@ -155,3 +155,10 @@ https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/303
 ### auth0
 
 Followed and implemented parts of this excellent guide: https://developer.auth0.com/resources/guides/web-app/fastapi/basic-authentication
+
+
+Now you need to fill the missing information for the SESSION_SECRET. To do so, generate a string using openssl using the following command:
+
+~~~bash
+openssl rand -hex 32
+~~~

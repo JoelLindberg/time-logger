@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>time-logger</title>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+</head>
+
+<body>
+<div id="container" class="container">
+
+<div class="header">
+    <h1>Time Logger</h1>
+
+    <div class="header-button">
+    {% if request.session %}
+    <button onclick="document.location='logout/'" class="btn">Logout</button>
+    {% endif %}
+    </div>
+</div>
+
+
+<h3>Log time you have worked</h3>
+
+<p>Use <i>In</i> and <i>Out</i> for expected 8h work days. Use <i>OT In</i> and <i>OT Out</i> for any other time (overtime).</p>
+
+<h4>{{ month_full }} {{ monthly.year }}</h4>
+<ul>
+    <li>Worked hours this month: <b>{{ monthly.worked_hours }}</b></li>
+    <li>Worked OT hours this month: <b>{{ monthly.worked_ot_hours }}</b></li>
+    <li>Monthly balance: <b>{{ monthly.monthly_balance }}</b></li>
+</ul>
+
+
+<fieldset><legend>{{ date }}</legend>
+
+<form action="/manage">
+    <label class="label-1" for="date">Select date</label>
+    <input type="date" id="selected_date" name="selected_date" value="{{ date }}">
+    <button class="btn" type="submit">Change</button>
+</form>
+
+
+
+<form action="/add/" method="POST" id="event-add">
+    <input type="hidden" id="selected_date" name="selected_date" value="{{ date }}">
+    <span id="timeError" class="error-message"></span>
+    <label class="label-1" for="event">Event</label>
+    <select name="event" id="event">
+        <option value="in">In</option>
+        <option value="out">Out</option>
+        <option value="ot-in">OT In</option>
+        <option value="ot-out">OT Out</option>
+    </select>
+    <label for="time">Time</label>
+    <input type="text" id="time" name="time" placeholder="06:30">
+    <label for="comment">Comment</label>
+    <input type="text" id="comment" name="comment">
+    <input class="btn" type="submit" value="Add">   
+</form>
+
+
+<form action="/update/" method="POST" id="event-update">
+    <input type="hidden" id="selected_date" name="selected_date" value="{{ date }}">
+    <fieldset><legend>Edit</legend>
+    {% for item in events %}
+        
+        <div class="form-group">
+        {% if item.date == date %}
+            <span id="timeUpdateError-{{ loop.index }}" class="error-message"></span>
+            <select name="event" id="event">
+                {% if item.event == "in" %}
+                    <option value="in" selected>In</option>
+                {% else %}
+                    <option value="in">In</option>
+                {% endif %}
+
+                {% if item.event == "out" %}
+                    <option value="out" selected>Out</option>
+                {% else %}
+                    <option value="out">Out</option>
+                {% endif %}
+
+                {% if item.event == "ot-in" %}
+                    <option value="ot-in" selected>OT In</option>
+                {% else %}
+                    <option value="ot-in">OT In</option>
+                {% endif %}
+
+                {% if item.event == "ot-out" %}
+                    <option value="ot-out" selected>OT Out</option>
+                {% else %}
+                    <option value="ot-out">OT Out</option>
+                {% endif %}
+            </select>
+            
+            <label for="time">Time</label>
+            <input type="text" id="time-{{ loop.index }}" name="time" value="{{ item.time }}">
+            
+            <label for="comment">Comment</label>
+            
+            <input type="text" id="comment" name="comment" value="{{ item.comment }}">
+            
+
+            <a href="/delete/?event_id={{ item.event_id }}&selected_date={{ date }}&event={{ item.event }}" class="delete-button" id="delete">❌</a>
+            
+            
+        {% endif %}
+        </div>
+    {% endfor %}
+
+    <input class="btn" type="submit" value="Update">
+    </fieldset>
+</form>
+</fieldset>
+
+
+<div class="events">
+    {% for d in daily %}
+    <h4>{{ d.date }}</h4>
+    <ul id="events">
+            {% for item in events %}
+                {% if d.date == item.date %}
+                <li>
+                    <b>{{ item.date }}</b>,
+                    {{ item.event }},
+                    {{ item.time }},
+                    {{ item.comment }}
+                </li>
+                {% endif %}
+            {% endfor %}   
+    </ul>
+    <ul>
+        <li>Worked: <b>{{ d.worked_hours }}</b></li>
+        <li>Worked OT: <b>{{ d.worked_ot_hours }}</b></li>
+        <li>Daily balance (excluding OT): <b>{{ d.daily_balance }}</b></li>
+        </ul>
+    <hr>
+    {% endfor %}
+</div>
+
+</div>
+
+
+<script>
+// Validating user input
+const p = /^([0-1][0-9]|2[0-4]):[0-5][0-9]$/g;
+const timeErrorMessage = "Invalid time format (hh:mm) or missing input. Correct example 07:00"
+
+// Validation for /add (Adding event)
+const addForm = document.getElementById('event-add');
+addForm.addEventListener('submit', function(e) {
+    const timeValue = document.getElementById('time').value;
+    const errorElement = document.getElementById("timeError");
+    const errorInputField = document.getElementById("time");
+
+    if (!timeValue.match(p)) {
+        /*console.log("proceed")
+    } else {*/
+        e.preventDefault();
+        console.log("error");
+        errorElement.textContent = timeErrorMessage;
+        errorInputField.style = "border: 2px solid red";
+    }
+});
+
+// Validation for /update (Edit)
+const pIdx = /^.*-([0-9][0-9]?)/
+const updateForm = document.getElementById('event-update');
+updateForm.addEventListener('submit', function(e) {
+    let err = false;
+    Array.from(updateForm.elements).forEach(element => {
+        if (element.id.slice(0, 4) === 'time') {
+            // get the id for the current timeUpdateError-n span
+            const eventIdx = element.id.match(pIdx);
+            const errorElement = document.getElementById("timeUpdateError-" + eventIdx[1]);
+            const errorInputField = document.getElementById(element.id);
+
+            if (element.value.match(p) && errorElement != "") {
+                errorElement.textContent = "";
+                errorInputField.style = "";
+            } else {
+                err = true;
+                errorElement.textContent = timeErrorMessage;
+                errorInputField.style = "border: 2px solid red";
+            }
+        }
+    });
+    if (err) {
+        e.preventDefault();
+    }
+});
+</script>
+
+</body>
+</html>

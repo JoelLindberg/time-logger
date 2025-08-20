@@ -21,7 +21,7 @@ async def login(request: Request):
             redirect_uri=request.url_for("callback")
         )
 
-    return RedirectResponse(url=request.url_for("index"))
+    return RedirectResponse(url=request.url_for("manage"))
 
 
 @auth_router.get("/logout")
@@ -55,4 +55,4 @@ async def callback(request: Request):
     request.session['id_token'] = token['id_token']
     request.session['userinfo'] = token['userinfo']
 
-    return RedirectResponse(url=request.url_for("index"))
+    return RedirectResponse(url=request.url_for("manage"))

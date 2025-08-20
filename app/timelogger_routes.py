@@ -13,8 +13,17 @@ from app.auth_dependencies import protected_endpoint
 timelogger_router = APIRouter()
 
 
-@timelogger_router.get(path="/", dependencies=[Depends(protected_endpoint)], name="index")
-async def root(request: Request, selected_date: str = ""):
+@timelogger_router.get(path="/", name="index")
+async def root(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+        })
+
+
+@timelogger_router.get(path="/manage", dependencies=[Depends(protected_endpoint)], name="manage")
+async def manage(request: Request, selected_date: str = ""):
     if selected_date == "":
         selected_date = datetime.today().strftime('%Y-%m-%d')
 
@@ -60,7 +69,7 @@ async def root(request: Request, selected_date: str = ""):
         monthly = models.Monthly.get_monthly(selected_date)
 
     return templates.TemplateResponse(
-        "index.html",
+        "manage.html",
         {
             "request": request,
             "date": selected_date,
@@ -85,7 +94,7 @@ async def add(selected_date: Annotated[str, Form()],
                                     comment=comment)
     except ValueError as err:
         print(f"Error: {err}")
-        return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+        return RedirectResponse(f"/manage/?selected_date={selected_date}", status_code=303)
 
     add_event = ("""INSERT INTO events (
         date,
@@ -113,7 +122,7 @@ async def add(selected_date: Annotated[str, Form()],
     models.Daily.update_daily(selected_date)
     models.Monthly.update_monthly(selected_date)
 
-    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+    return RedirectResponse(f"/manage/?selected_date={selected_date}", status_code=303)
 
 
 @timelogger_router.get("/delete/", dependencies=[Depends(protected_endpoint)])
@@ -153,7 +162,7 @@ async def delete(event_id: int, selected_date: str, event: str):
     if len(events) == 0:
         models.Daily.delete_daily(selected_date)
 
-    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+    return RedirectResponse(f"/manage/?selected_date={selected_date}", status_code=303)
 
 
 @timelogger_router.post("/update/", dependencies=[Depends(protected_endpoint)])
@@ -185,7 +194,7 @@ async def update(selected_date: Annotated[str, Form()],
                                  comment=comment[i])
         except ValueError as err:
             print(f"Error: {err}")
-            return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+            return RedirectResponse(f"/manage/?selected_date={selected_date}", status_code=303)
 
         changed = False
         if upd_e.event != e.event:
@@ -209,7 +218,7 @@ async def update(selected_date: Annotated[str, Form()],
     models.Daily.update_daily(selected_date)
     models.Monthly.update_monthly(selected_date)
 
-    return RedirectResponse(f"/?selected_date={selected_date}", status_code=303)
+    return RedirectResponse(f"/manage/?selected_date={selected_date}", status_code=303)
 
 
 @timelogger_router.get("/favicon.png", include_in_schema=False, dependencies=[Depends(protected_endpoint)])

@@ -3,6 +3,9 @@ services:
     image: "time-logger"
     environment:
         #DB_FILE: "db/time_logger.db"
+        #UVICORN_HOST: "0.0.0.0"
+        #UVICORN_PORT: 8000
+        #UVICORN_ARGS: ""
         # auth0
         CLIENT_ID: ${CLIENT_ID}
         CLIENT_SECRET: ${CLIENT_SECRET}

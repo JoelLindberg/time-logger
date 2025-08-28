@@ -2,7 +2,6 @@ services:
   web:
     image: "time-logger"
     environment:
-        #DB_FILE: "db/time_logger.db"
         #UVICORN_HOST: "0.0.0.0"
         #UVICORN_PORT: 8000
         #UVICORN_ARGS: ""
